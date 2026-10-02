@@ -1,0 +1,3767 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>图灵AI辅助 · 智能伪装引擎</title>
+<link rel="icon" href="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9F%A0%3C/text%3E%3C/svg%3E">
+<style>
+  :root{
+    --bg:#05060f;
+    --bg2:#0a0d1f;
+    --card:rgba(255,255,255,.045);
+    --border:rgba(255,255,255,.09);
+    --tx:#e9edff;
+    --tx2:#9aa3c7;
+    --cyan:#22d3ee;
+    --violet:#8b5cf6;
+    --pink:#f43f5e;
+    --green:#34d399;
+    --amber:#fbbf24;
+    --grad:linear-gradient(120deg,#22d3ee,#8b5cf6 55%,#f43f5e);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+    background:var(--bg); color:var(--tx);
+    line-height:1.7; overflow-x:hidden;
+  }
+  ::selection{background:rgba(139,92,246,.4)}
+
+  /* ===== 背景装饰 ===== */
+  .bg-grid{
+    position:fixed; inset:0; z-index:-3; pointer-events:none;
+    background-image:linear-gradient(rgba(139,92,246,.07) 1px,transparent 1px),
+                     linear-gradient(90deg,rgba(139,92,246,.07) 1px,transparent 1px);
+    background-size:56px 56px;
+    mask-image:radial-gradient(ellipse 90% 70% at 50% 0%,#000 40%,transparent 100%);
+  }
+  .bg-orb{position:fixed; border-radius:50%; filter:blur(110px); z-index:-2; pointer-events:none; opacity:.5; animation:orb 16s ease-in-out infinite alternate}
+  .orb-1{width:520px;height:520px;background:#6d28d9;top:-160px;left:-120px}
+  .orb-2{width:460px;height:460px;background:#0e7490;top:30%;right:-180px;animation-delay:-6s}
+  .orb-3{width:420px;height:420px;background:#9d174d;bottom:-160px;left:30%;animation-delay:-11s}
+  @keyframes orb{to{transform:translate(60px,40px) scale(1.15)}}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+
+  /* ======== 导航 ======== */
+  nav{
+    position:sticky; top:0; z-index:50;
+    backdrop-filter:blur(18px); background:rgba(4,6,15,.65);
+    border-bottom:1px solid var(--border);
+  }
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
+  .brand{display:flex;align-items:center;gap:12px;font-weight:700;font-size:18px;letter-spacing:1.5px}
+  .brand .logo{
+    width:34px;height:34px;border-radius:10px;display:grid;place-items:center;
+    background:var(--grad); box-shadow:0 0 22px rgba(139,92,246,.55); color:#fff; font-size:15px;
+  }
+  .nav-links{display:flex;gap:28px;font-size:14px}
+  .nav-links a{color:var(--tx2);text-decoration:none;transition:.25s}
+  .nav-links a:hover{color:#fff}
+  .nav-cta{
+    padding:9px 22px;border-radius:999px;text-decoration:none;color:#fff;font-size:14px;
+    background:var(--grad);box-shadow:0 4px 24px rgba(139,92,246,.45);
+    transition:.3s;
+  }
+  .nav-cta:hover{transform:translateY(-2px);box-shadow:0 8px 34px rgba(139,92,246,.65)}
+
+  /* ======== Hero ======== */
+  header{position:relative;padding:110px 0 80px;text-align:center}
+  .badge{
+    display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--cyan,#67e8f9);
+    border:1px solid rgba(34,211,238,.35);background:rgba(34,211,238,.08);
+    padding:6px 16px;border-radius:999px;margin-bottom:26px;letter-spacing:2px;
+  }
+  .badge .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);animation:pulse 1.6s infinite}
+  @keyframes pulse{50%{opacity:.35}}
+  h1{
+    font-size:clamp(42px,7vw,76px);font-weight:800;letter-spacing:2px;line-height:1.15;
+    background:linear-gradient(115deg,#fff 20%,#a5b4fc 45%,#67e8f9 70%,#f0abfc 95%);
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+    text-shadow:0 0 60px rgba(139,92,246,.35);
+  }
+  .sub{max-width:720px;margin:24px auto 0;color:var(--tx2);font-size:17px}
+  .hero-actions{display:flex;gap:18px;justify-content:center;margin-top:40px;flex-wrap:wrap}
+  .btn{
+    display:inline-flex;align-items:center;gap:10px;padding:15px 38px;border-radius:14px;
+    text-decoration:none;font-size:16px;font-weight:600;transition:.3s;
+  }
+  .btn-primary{color:#fff;background:var(--grad);box-shadow:0 8px 40px rgba(139,92,246,.5)}
+  .btn-primary:hover{transform:translateY(-3px);box-shadow:0 16px 60px rgba(139,92,246,.7)}
+  .btn-ghost{color:var(--tx);border:1px solid var(--border);background:var(--card);backdrop-filter:blur(8px)}
+  .btn-ghost:hover{border-color:rgba(139,92,246,.6);background:rgba(139,92,246,.12)}
+  .btn .ic{font-size:18px}
+  .meta{display:flex;gap:34px;justify-content:center;margin-top:44px;font-size:13px;color:var(--tx2);flex-wrap:wrap}
+  .meta span{display:flex;align-items:center;gap:7px}
+  .meta i{color:var(--green)}
+
+  /* 终端模拟窗 */
+  .terminal{
+    margin:70px auto 0;max-width:860px;text-align:left;border-radius:18px;overflow:hidden;
+    border:1px solid var(--border);background:rgba(10,13,31,.85);backdrop-filter:blur(14px);
+    box-shadow:0 40px 100px rgba(0,0,0,.55),0 0 0 1px rgba(34,211,238,.06) inset;
+  }
+  .term-bar{display:flex;align-items:center;gap:8px;padding:13px 18px;border-bottom:1px solid var(--border);background:rgba(255,255,255,.03)}
+  .t{width:12px;height:12px;border-radius:50%}
+  .t1{background:#ff5f57}.t2{background:#febc2e}.t3{background:#28c840}
+  .term-title{margin-left:10px;font-size:12px;color:var(--tx2);letter-spacing:1px}
+  .term-body{padding:22px 26px;font-family:Consolas,"Courier New",monospace;font-size:13.5px;color:#c7d2fe;min-height:230px}
+  .term-body .ln{opacity:0;animation:rise .4s forwards}
+  @keyframes rise{to{opacity:1}}
+  .tb{color:#67e8f9}
+  .tg{color:#34d399}
+  .ty{color:#fbbf24}
+  .tr{color:#f87171}
+  .tm{color:#a5b4fc}
+  .cursor{display:inline-block;width:9px;height:16px;background:#67e8f9;vertical-align:-3px;animation:blink .9s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+
+  /* ======== 区段标题 ======== */
+  section{padding:96px 0}
+  .sec-head{text-align:center;margin-bottom:60px}
+  .sec-tag{
+    display:inline-block;font-size:12px;letter-spacing:3px;color:var(--violet);
+    border:1px solid rgba(139,92,246,.35);padding:5px 14px;border-radius:999px;margin-bottom:16px;
+    background:rgba(139,92,246,.07);
+  }
+  .sec-head h2{font-size:clamp(28px,4vw,42px);font-weight:800;letter-spacing:1px}
+  .sec-head p{color:var(--tx2);margin-top:12px;font-size:15px}
+
+  /* ======== 特性网格 ======== */
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:16px}
+  .card{
+    position:relative;padding:22px 22px;border-radius:14px;border:1px solid var(--border);
+    background:var(--card);backdrop-filter:blur(10px);transition:.35s;overflow:hidden;
+  }
+  .card::before{
+    content:"";position:absolute;inset:0;border-radius:14px;opacity:0;transition:.35s;
+    background:radial-gradient(600px circle at var(--mx,50%) var(--my,50%),rgba(139,92,246,.16),transparent 42%);
+  }
+  .card:hover::before{opacity:1}
+  .card:hover{transform:translateY(-6px);border-color:rgba(139,92,246,.45);box-shadow:0 20px 60px rgba(10,10,30,.6)}
+  .card .ic{
+    width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-size:20px;margin-bottom:14px;
+    background:linear-gradient(135deg,rgba(34,211,238,.16),rgba(139,92,246,.16));
+    border:1px solid rgba(139,92,246,.3);
+  }
+  .card h3{font-size:16.5px;margin-bottom:8px;font-weight:700}
+  .card p{color:var(--tx2);font-size:13px}
+  .card .tag{
+    display:inline-block;margin-top:10px;font-size:11px;padding:3px 10px;border-radius:999px;
+    border:1px solid rgba(52,211,153,.35);color:var(--green);background:rgba(52,211,153,.07);
+  }
+  .card .tag.amber{border-color:rgba(251,191,36,.35);color:var(--amber);background:rgba(251,191,36,.07)}
+
+  /* ======== 流程 ======== */
+  .flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;counter-reset:step}
+  .step{
+    position:relative;padding:24px 20px;border-radius:14px;border:1px solid var(--border);
+    background:var(--card);text-align:center;transition:.3s;
+  }
+  .step:hover{transform:translateY(-5px);border-color:rgba(34,211,238,.5)}
+  .step::before{
+    counter-increment:step;content:"0" counter(step);
+    font-weight:800;font-size:26px;letter-spacing:1px;display:block;
+    background:linear-gradient(120deg,#67e8f9,#a78bfa);-webkit-background-clip:text;background-clip:text;
+    -webkit-text-fill-color:transparent;margin-bottom:8px;
+  }
+  .step h4{font-size:15px;margin-bottom:6px}
+  .step p{font-size:12.5px;color:var(--tx2)}
+  .step .arrow{color:var(--violet);font-size:22px;margin-top:14px}
+
+  /* ======== 状态仪表板 ======== */
+  .dash{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-top:44px;
+  }
+  .stat{
+    text-align:center;padding:22px 14px;border-radius:14px;border:1px solid var(--border);
+    background:linear-gradient(160deg,rgba(139,92,246,.09),rgba(34,211,238,.05));
+  }
+  .stat b{font-size:clamp(26px,3.5vw,38px);font-weight:800;background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .stat span{display:block;margin-top:5px;font-size:12.5px;color:var(--tx2)}
+
+  /* ======== 安装 ======== */
+  .install{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}
+  .inst{padding:24px 20px;border-radius:14px;border:1px solid var(--border);background:var(--card);position:relative}
+  .inst .n{
+    width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-weight:800;font-size:13px;
+    background:var(--grad);color:#fff;margin-bottom:12px;box-shadow:0 6px 18px rgba(139,92,246,.4);
+  }
+  .inst h4{font-size:15px;margin-bottom:6px}
+  .inst p{font-size:12.5px;color:var(--tx2)}
+  .inst code{
+    display:inline-block;margin-top:8px;font-size:11px;padding:4px 10px;border-radius:8px;
+    background:rgba(139,92,246,.12);color:#c4b5fd;border:1px solid rgba(139,92,246,.3);
+  }
+
+  /* ======== 下载专区 ======== */
+  .dl-group{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;margin-top:44px}
+  .dl-card{
+    border:1px solid var(--border);border-radius:16px;padding:26px 24px;background:linear-gradient(160deg,rgba(139,92,246,.07),rgba(34,211,238,.03));
+    transition:.3s;
+  }
+  .dl-card:hover{transform:translateY(-4px);border-color:rgba(139,92,246,.55)}
+  .dl-card .dl-os{font-size:16px;font-weight:800;display:flex;align-items:center;gap:8px;color:#fff}
+  .dl-card .dl-os small{font-weight:600;font-size:11.5px;color:var(--tx2);border:1px solid var(--border);border-radius:999px;padding:3px 10px}
+  .dl-card .dl-os small.soon{color:var(--tx2);border-color:rgba(255,255,255,.12)}
+  .dl-card table{width:100%;border-collapse:collapse;margin-top:16px}
+  .dl-card table td{padding:9px 4px;font-size:13px;color:var(--tx2);border-bottom:1px dashed rgba(255,255,255,.07);vertical-align:middle}
+  .dl-card table tr:last-child td{border-bottom:none}
+  .dl-card table td .chip{color:#c7d2fe;font-weight:600;white-space:nowrap}
+  .dl-card table td .soon-tag{color:#6b7296;font-size:12px;white-space:nowrap}
+  .dl-card table td .dl-btn{
+    display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:10px;
+    text-decoration:none;font-size:12.5px;font-weight:700;color:#fff;background:var(--grad);
+    box-shadow:0 4px 16px rgba(139,92,246,.4);transition:.3s;white-space:nowrap;
+  }
+  .dl-card table td .dl-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(139,92,246,.55)}
+  .dl-card table td .dl-btn.off{background:rgba(255,255,255,.09);color:var(--tx2);box-shadow:none;cursor:default;transform:none}
+  .dl-note{text-align:center;margin-top:34px;font-size:13px;color:#8a94c6}
+
+  /* ======== FAQ ======== */
+  .faq{max-width:800px;margin:0 auto}
+  .q{border:1px solid var(--border);border-radius:14px;margin-bottom:14px;overflow:hidden;background:var(--card)}
+  .q summary{
+    cursor:pointer;list-style:none;padding:20px 26px;font-size:15.5px;font-weight:600;
+    display:flex;justify-content:space-between;align-items:center;transition:.25s;
+  }
+  .q summary:hover{color:#c4b5fd}
+  .q summary::after{content:"+";font-size:22px;color:var(--violet);transition:.3s}
+  .q[open] summary::after{transform:rotate(45deg)}
+  .q .a{padding:0 26px 22px;color:var(--tx2);font-size:14px}
+
+  /* ======== CTA ======== */
+  .cta-banner{
+    border-radius:22px;padding:64px 32px;text-align:center;position:relative;overflow:hidden;
+    background:linear-gradient(130deg,rgba(139,92,246,.22),rgba(34,211,238,.14));
+    border:1px solid rgba(139,92,246,.4);
+  }
+  .cta-banner::before{
+    content:"";position:absolute;width:340px;height:340px;border-radius:50%;
+    background:rgba(139,92,246,.28);filter:blur(80px);top:-120px;left:50%;transform:translateX(-50%);
+  }
+  .cta-banner h2{font-size:clamp(26px,4vw,38px);font-weight:800;letter-spacing:1px;position:relative}
+  .cta-banner p{color:var(--tx2);margin:14px 0 30px;position:relative}
+  .cta-banner a{position:relative}
+
+  footer{border-top:1px solid var(--border);padding:38px 0;text-align:center;color:var(--tx2);font-size:13px}
+  footer .legal{max-width:760px;margin:14px auto 0;font-size:12px;color:#6b7296;line-height:1.9}
+
+  /* ======== 界面预览（1:1 复刻脚本控制面板，功能无效） ======== */
+  .demo-wrap{display:grid;grid-template-columns:1fr;gap:18px}
+  .demo-hint{text-align:center;color:#8a94c6;font-size:13px;margin-bottom:22px}
+  .demo-stage{
+    position:relative;max-width:1760px;margin:0 auto;border-radius:16px;overflow:visible;
+    border:1px solid var(--border);background:#0a0d1f;
+    box-shadow:0 30px 80px rgba(0,0,0,.5);
+  }
+  .demo-browser{
+    display:flex;align-items:center;gap:10px;padding:11px 350px;border-bottom:1px solid var(--border);
+    background:rgba(255,255,255,.03);font-size:12px;color:var(--tx2);
+  }
+  .demo-bubble-a,.demo-bubble-b,.demo-bubble-g{width:12px;height:12px;border-radius:50%}
+  .demo-bubble-a{background:#ff5f57}.demo-bubble-b{background:#febc2e}.demo-bubble-g{background:#28c840}
+  .demo-url{margin-left:12px;flex:1;text-align:center;background:rgba(0,0,0,.35);border-radius:8px;padding:5px 12px;color:#8a94c6;font-size:12px}
+  .demo-chat{min-height:460px;max-height:1080px;overflow-y:auto;padding:18px 22px;display:flex;flex-direction:column;gap:14px;background:
+      radial-gradient(600px 300px at 20% 0%,rgba(139,92,246,.1),transparent 60%),
+      radial-gradient(500px 260px at 95% 100%,rgba(34,211,238,.08),transparent 60%);
+  }
+   .demo-msg{max-width:78%}
+   .demo-msg .dm-info{font-size:11px;color:var(--tx2);margin-bottom:4px;padding:0 2px}
+   .demo-msg .dm-bubble{
+     padding:9px 14px;border-radius:12px;font-size:14px;line-height:1.6;color:#dbe4ff;
+     border:1px solid var(--border);background:rgba(255,255,255,.05);
+     display:inline-block;max-width:100%;word-break:break-word;
+   }
+   .demo-msg.left{align-self:flex-start}
+   .demo-msg.right{align-self:flex-end;text-align:right}
+   .demo-msg.right .dm-bubble{
+     background:linear-gradient(135deg,rgba(34,211,238,.18),rgba(139,92,246,.2));
+     border-color:rgba(139,92,246,.4);
+   }
+   .demo-msg.right .dm-info{order:2}
+   .demo-msg.right .dm-bubble{display:inline-block;text-align:left}
+   .demo-inputbar{
+     display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--border);
+     background:rgba(0,0,0,.25);align-items:center;
+   }
+   .demo-inputbar input{
+     flex:1;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;
+     padding:9px 14px;color:var(--tx);font-size:13px;outline:none;
+   }
+   .demo-inputbar input:focus{border-color:var(--accent)}
+   .demo-inputbar .send{background:var(--grad);border:none;border-radius:8px;color:#fff;padding:9px 20px;font-size:13px;cursor:default;opacity:.75}
+   .demo-send{
+     background:var(--grad);border:none;border-radius:8px;color:#fff;padding:8px 18px;font-size:13px;
+     cursor:pointer;font-weight:600;transition:opacity .2s;flex-shrink:0;
+   }
+   .demo-send:hover{opacity:.9}
+   /* 判定区域 */
+   .demo-verdict-zone{display:none;align-items:center;justify-content:space-between;padding:12px 14px;border-top:1px solid var(--border);background:rgba(0,0,0,.15);gap:12px}
+   .demo-verdict-zone.show{display:flex}
+   .demo-verdict-info{flex:1}
+   .demo-verdict-info .dv-title{font-size:14px;font-weight:700;color:var(--tx);margin-bottom:2px}
+   .demo-verdict-info .dv-hint{font-size:11px;color:var(--tx2)}
+   .demo-verdict-btns{display:flex;gap:8px;flex-shrink:0}
+   .demo-verdict-btns button{padding:8px 20px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.5px}
+   .demo-verdict-human{background:rgba(74,222,128,.1);border:2px solid rgba(74,222,128,.3);color:#4ade80}
+   .demo-verdict-human:hover{background:rgba(74,222,128,.2);border-color:rgba(74,222,128,.5)}
+   .demo-verdict-human.selected{background:rgba(74,222,128,.25);border-color:#4ade80;box-shadow:0 0 12px rgba(74,222,128,.4)}
+   .demo-verdict-ai{background:rgba(248,113,113,.1);border:2px solid rgba(248,113,113,.3);color:#f87171}
+   .demo-verdict-ai:hover{background:rgba(248,113,113,.2);border-color:rgba(248,113,113,.5)}
+   .demo-verdict-ai.selected{background:rgba(248,113,113,.25);border-color:#f87171;box-shadow:0 0 12px rgba(248,113,113,.4)}
+   /* 匹配中 */
+   .demo-matching{display:none;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;gap:16px}
+   .demo-matching.show{display:flex}
+   .demo-matching h3{font-size:20px;font-weight:700;color:var(--tx)}
+   .demo-matching p{font-size:13px;color:var(--tx2)}
+   .match-dots{display:flex;gap:8px}
+   .match-dots span{width:12px;height:12px;border-radius:50%;background:var(--accent);animation:matchBounce 1.2s infinite}
+   .match-dots span:nth-child(2){animation-delay:.2s}
+   .match-dots span:nth-child(3){animation-delay:.4s}
+   @keyframes matchBounce{0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1}}
+   /* 主页 */
+   .demo-landing{display:none;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;gap:16px;text-align:center}
+   .demo-landing.show{display:flex}
+   .demo-landing h2{font-size:22px;font-weight:800;color:var(--tx);line-height:1.4}
+   .demo-landing p{font-size:13px;color:var(--tx2);max-width:400px;line-height:1.6}
+   .demo-start-btn{padding:12px 32px;border-radius:8px;border:2px solid var(--accent);background:rgba(192,132,252,.1);color:var(--accent);font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:1px}
+   .demo-start-btn:hover{background:rgba(192,132,252,.2)}
+   /* 再来一局 */
+   .demo-result{display:none;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;gap:12px;text-align:center}
+   .demo-result.show{display:flex}
+   .demo-result h3{font-size:22px;font-weight:800;color:var(--tx)}
+   .demo-result .result-verdict{font-size:16px;font-weight:700;padding:8px 24px;border-radius:8px}
+   .demo-result .result-verdict.human{color:#4ade80;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.3)}
+   .demo-result .result-verdict.ai{color:#f87171;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3)}
+   .demo-result p{font-size:13px;color:var(--tx2)}
+
+  /* 电脑端提示条（点它或按 Insert 打开） */
+  .kbd-hint{
+    position:absolute;top:auto;left:50%;bottom:84px;transform:translateX(-50%);
+    width:max-content;display:flex;align-items:center;gap:10px;z-index:9;cursor:pointer;
+    background:rgba(13,13,17,.92);border:1px solid rgba(192,132,252,.35);
+    border-radius:999px;padding:9px 18px;font-size:12px;color:#c0c0d8;
+    box-shadow:0 8px 24px rgba(0,0,0,.5);transition:.25s;
+    white-space:nowrap;
+  }
+  .kbd-hint:hover{border-color:#c084fc;box-shadow:0 0 24px rgba(192,132,252,.35);color:#fff}
+  .kbd-hint .kbd{
+    display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:20px;
+    border:1px solid rgba(192,132,252,.5);border-bottom-width:2px;border-radius:5px;
+    font-size:11px;font-weight:700;color:#c084fc;background:rgba(192,132,252,.1);padding:0 6px;
+    font-family:Consolas,monospace;
+  }
+  .kbd-hint.desktop-only{display:flex}
+
+  /* 手机端悬浮球（可拖动）：仅 body.is-mobile 显示 */
+  .tui-ball{
+    position:fixed;right:16px;bottom:16px;width:58px;height:58px;border-radius:50%;
+    background:linear-gradient(135deg,#c084fc,#7c3aed,#f43f5e);
+    display:none;place-items:center;z-index:9998;cursor:grab;user-select:none;touch-action:none;
+    box-shadow:0 10px 30px rgba(124,58,237,.55);border:2px solid rgba(255,255,255,.3);
+    font-size:11px;font-weight:800;color:#fff;letter-spacing:1px;
+  }
+  /* 手机端悬浮球：自 V1.5 起暂不显示，等 V2.0 更新再启用 */
+  body.is-mobile .tui-ball{display:none}
+  body:not(.is-mobile) .kbd-hint{display:flex}
+  .tui-ball.dragging{cursor:grabbing;opacity:.88;box-shadow:0 0 0 6px rgba(192,132,252,.25)}
+
+  /* ======== 复刻脚本控制台:样式与脚本注入面板 1:1（原样提取） ======== */
+#turing-auto-panel {
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          z-index: 99999;
+           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", "Helvetica Neue", Arial, sans-serif;
+           font-size: 12px;
+           width: 900px;
+           height: 580px;
+           max-width: calc(100vw - 20px);
+           max-height: calc(100vh - 20px);
+          display: none;
+          pointer-events: auto;
+          background: var(--bg-primary); /* 统一背景，去除白边 */
+          border-radius: var(--radius);
+          overflow: hidden;
+          box-shadow: 0 0 60px rgba(124,58,237,0.15), 0 0 120px rgba(0,0,0,0.7), 0 8px 32px rgba(0,0,0,0.6);
+          /* FATALITY 紫调配色 */
+          --bg-primary: #0d0d11;
+          --bg-secondary: #12121a;
+          --bg-tertiary: #1a1a26;
+          --bg-hover: #222233;
+          --border: #2a2a3a;
+          --border-light: #333348;
+          --text: #e0e0e8;
+          --text-dim: #a0a0b8;
+          --text-muted: #6a6a80;
+          --accent: #c084fc;
+          --accent-glow: rgba(192,132,252,0.35);
+          --accent-soft: rgba(192,132,252,0.12);
+          --accent-dark: #7c3aed;
+          --green: #4ade80;
+          --red: #f87171;
+          --orange: #fb923c;
+          --yellow: #facc15;
+          --pink: #f472b6;
+          --radius: 6px;
+        }
+        #turing-auto-panel.visible { display: flex; }
+        #turing-auto-panel * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", "Helvetica Neue", Arial, sans-serif !important; }
+        /* 等宽区域单独覆盖，保持代码字体一致 */
+        #turing-auto-panel textarea.code,
+        #turing-auto-panel pre,
+        #turing-auto-panel code,
+        #turing-auto-panel .mono { font-family: "Cascadia Code", "Fira Code", "JetBrains Mono", Consolas, "Courier New", monospace !important; }
+        #turing-auto-panel .inner {
+          display: flex;
+          width: 100%;
+          height: 100%;
+          background: var(--bg-primary);
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          color: var(--text);
+          box-shadow: 0 0 60px rgba(124,58,237,0.15), 0 0 120px rgba(0,0,0,0.7), 0 8px 32px rgba(0,0,0,0.6);
+          overflow: hidden;
+        }
+
+        /* 左侧导航栏 */
+        #turing-auto-panel .nav-sidebar {
+          width: 180px;
+          min-width: 180px;
+          background: var(--bg-secondary);
+          border-right: 1px solid var(--border);
+           display: flex;
+           flex-direction: column;
+           padding: 0;
+         }
+        #turing-auto-panel .nav-brand {
+          padding: 12px 14px 10px;
+          font-size: 12.5px;
+          font-weight: 700;
+          color: var(--accent);
+          letter-spacing: 1.5px;
+          text-align: center;
+          border-bottom: 1px solid var(--border);
+          cursor: move;
+          text-shadow: 0 0 10px var(--accent-glow);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          line-height: 1;
+        }
+        #turing-auto-panel .nav-brand-icon {
+          width: 18px;
+          height: 18px;
+          border-radius: 5px;
+          display: inline-block;
+        }
+        #turing-auto-panel .nav-items {
+          flex: 1;
+          padding: 6px 0;
+          display: flex;
+          flex-direction: column;
+          gap: 1px;
+        }
+        #turing-auto-panel .nav-item {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 10px 14px;
+          font-size: 11px;
+          font-weight: 500;
+          color: var(--text-muted);
+          cursor: pointer;
+          transition: all 0.2s;
+          border-left: 2px solid transparent;
+          letter-spacing: 0.3px;
+        }
+        #turing-auto-panel .nav-item:hover {
+          background: var(--bg-hover);
+          color: var(--text-dim);
+        }
+        #turing-auto-panel .nav-item.active {
+          background: var(--accent-soft);
+          color: var(--accent);
+          border-left-color: var(--accent);
+        }
+        #turing-auto-panel .nav-item .nav-icon {
+          font-size: 13px;
+          width: 18px;
+          text-align: center;
+        }
+        #turing-auto-panel .nav-footer {
+          padding: 8px 14px;
+          border-top: 1px solid var(--border);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          font-size: 10px;
+          color: var(--text-muted);
+        }
+        #turing-auto-panel .nav-footer .power-dot {
+          width: 7px; height: 7px;
+          border-radius: 50%;
+          flex-shrink: 0;
+        }
+        #turing-auto-panel .nav-footer .power-dot.on { background: var(--green); box-shadow: 0 0 6px var(--green); }
+        #turing-auto-panel .nav-footer .power-dot.off { background: #555; }
+        #turing-auto-panel .nav-footer .nav-user {
+          display: flex;
+          align-items: center;
+          gap: 7px;
+          flex: 1;
+          min-width: 0;
+        }
+        #turing-auto-panel .nav-footer .nav-user-avatar {
+          width: 22px;
+          height: 22px;
+          border-radius: 50%;
+          background: var(--accent) radial-gradient(circle at 30% 30%, hsla(0,0%,100%,0.3), transparent 60%);
+          background-size: cover;
+          background-position: center;
+          flex-shrink: 0;
+          border: 1px solid var(--accent);
+          box-shadow: 0 0 8px var(--accent-glow);
+        }
+        #turing-auto-panel .nav-footer .nav-user-name {
+          font-size: 10px;
+          color: var(--text);
+          font-weight: 500;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        /* 缩放控制 */
+        #turing-auto-panel .zoom-row {
+          display: flex;
+          align-items: center;
+          gap: 2px;
+          flex-wrap: wrap;
+        }
+        #turing-auto-panel .zoom-label {
+          font-size: 9px;
+          color: var(--text-muted);
+          width: 100%;
+          margin-bottom: 1px;
+        }
+        #turing-auto-panel .zoom-btn {
+          flex: 1;
+          min-width: 28px;
+          padding: 3px 0;
+          font-size: 9px;
+          background: rgba(255,255,255,0.04);
+          border: 1px solid var(--border);
+          border-radius: 3px;
+          color: var(--text-muted);
+          cursor: pointer;
+          transition: all 0.15s;
+          text-align: center;
+        }
+        #turing-auto-panel .zoom-btn:hover {
+          background: var(--bg-hover);
+          color: var(--text-dim);
+        }
+        #turing-auto-panel .zoom-btn.active {
+          background: var(--accent-soft);
+          border-color: var(--accent-dark);
+          color: var(--accent);
+        }
+        /* 颜色主题 */
+        #turing-auto-panel .theme-row {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        }
+        #turing-auto-panel .theme-label {
+          font-size: 9px;
+          color: var(--text-muted);
+          flex-shrink: 0;
+        }
+        #turing-auto-panel .theme-dot {
+          width: 14px; height: 14px;
+          border-radius: 50%;
+          cursor: pointer;
+          border: 2px solid transparent;
+          transition: all 0.15s;
+          flex-shrink: 0;
+        }
+        #turing-auto-panel .theme-dot:hover {
+          transform: scale(1.2);
+        }
+        #turing-auto-panel .theme-dot.active {
+          border-color: #fff;
+          box-shadow: 0 0 8px currentColor;
+        }
+        #turing-auto-panel .color-chip {
+          width: 18px; height: 18px;
+          border-radius: 50%;
+          cursor: pointer;
+          border: 2px solid transparent;
+          transition: all 0.15s;
+          flex-shrink: 0;
+        }
+        #turing-auto-panel .color-chip:hover {
+          transform: scale(1.25);
+          z-index: 1;
+        }
+        #turing-auto-panel .color-chip.active {
+          border-color: #fff;
+          box-shadow: 0 0 6px currentColor;
+        }
+
+        /* 右侧内容区 */
+        #turing-auto-panel .content-area {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+        }
+        #turing-auto-panel .content-header {
+          padding: 10px 14px;
+          font-size: 12px;
+          font-weight: 600;
+          color: var(--text);
+          border-bottom: 1px solid var(--border);
+          background: var(--bg-secondary);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 10px;
+          letter-spacing: 0.4px;
+        }
+        #turing-auto-panel .content-header .header-search {
+          flex: 1;
+          max-width: 320px;
+          margin: 0 auto;
+        }
+        #turing-auto-panel #turing-search-input {
+          width: 100%;
+          padding: 5px 10px;
+          font-size: 11px;
+          color: var(--text);
+          background: var(--bg-primary);
+          border: 1px solid var(--border);
+          border-radius: 999px;
+          outline: none;
+          letter-spacing: 0.2px;
+          transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        #turing-auto-panel #turing-search-input:focus {
+          border-color: var(--accent);
+          box-shadow: 0 0 8px var(--accent-glow);
+        }
+        #turing-auto-panel #turing-search-input::placeholder { color: var(--text-muted); }
+        #turing-auto-panel .content-header .mode-badge {
+          font-size: 10px;
+          color: var(--accent);
+          background: var(--accent-soft);
+          padding: 3px 8px;
+          border-radius: 3px;
+          font-weight: 500;
+        }
+        #turing-auto-panel .content-body {
+          flex: 1;
+          padding: 12px 14px;
+          overflow-y: auto;
+          overflow-x: hidden;
+          background: var(--panel-bg, #0d0d11);
+        }
+
+        /* 滚动条（统一深色，覆盖所有 input/select/textarea/日志；跟随主题变色） */
+        #turing-auto-panel ::-webkit-scrollbar { width: 6px; height: 6px; }
+        #turing-auto-panel ::-webkit-scrollbar-track { background: rgba(0,0,0,0.35); }
+        #turing-auto-panel ::-webkit-scrollbar-thumb {
+          background: var(--sb-thumb, rgba(255,255,255,0.15)); border-radius: 3px;
+        }
+        #turing-auto-panel ::-webkit-scrollbar-thumb:hover { background: var(--sb-thumb-hover, rgba(255,255,255,0.28)); }
+        #turing-auto-panel textarea,
+        #turing-auto-panel select {
+          scrollbar-width: thin;
+          scrollbar-color: var(--sb-thumb, rgba(255,255,255,0.3)) rgba(0,0,0,0.35);
+        }
+        /* 输入框背景跟随主题（浅色模式下不再是黑色块） */
+        #turing-auto-panel input[type="text"],
+        #turing-auto-panel input[type="password"],
+        #turing-auto-panel input[type="number"],
+        #turing-auto-panel select,
+        #turing-auto-panel textarea {
+          background: var(--input-bg, rgba(0,0,0,0.3)) !important;
+          border-color: var(--border) !important;
+        }
+        #turing-auto-panel .switch { background: var(--switch-track, rgba(255,255,255,0.08)); }
+        #turing-auto-panel .switch.on {
+          background: var(--accent) !important;
+          box-shadow: 0 0 8px var(--accent-glow) !important;
+        }
+        #turing-auto-panel select { color: var(--text) !important; }
+        #turing-auto-panel textarea { color: var(--text) !important; }
+
+        /* tab 内容切换 */
+        #turing-auto-panel .tab-content { display: none; }
+        #turing-auto-panel .tab-content.active { display: block; }
+        /* 图灵AI 页：左侧高卡片 + 右侧小卡片纵排，两列各自填满，无空隙 */
+        #turing-auto-panel #tab-aim.active { display: block; }
+        #turing-auto-panel #tab-aim.active .search-service-bar { margin-bottom: 10px; }
+        #turing-auto-panel .aim-cols {
+          display: flex;
+          gap: 10px;
+          align-items: stretch;
+        }
+        #turing-auto-panel .aim-cols .aim-col {
+          flex: 1;
+          min-width: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+        #turing-auto-panel .aim-cols .section { margin-bottom: 0; flex: 0 0 auto; }
+        /* 右列小卡片拉伸填满剩余高度，视觉上补齐空隙 */
+        #turing-auto-panel .aim-cols .aim-col:last-child .section:last-child { flex: 1; }
+        /* 设置页：双列布局（左列缩放/主题/颜色，右列快捷键/头像/名称），右列拉伸补高 */
+        #turing-auto-panel #tab-settings.active { display: block; }
+        #turing-auto-panel #tab-settings.active .aim-cols {
+          display: flex;
+          gap: 10px;
+          align-items: stretch;
+        }
+        #turing-auto-panel #tab-settings.active .aim-cols .aim-col {
+          flex: 1; min-width: 0;
+          display: flex; flex-direction: column; gap: 10px;
+        }
+        #turing-auto-panel #tab-settings.active .section { margin-bottom: 0; flex: 0 0 auto; }
+        #turing-auto-panel #tab-settings.active .aim-cols .aim-col .section:last-child { flex: 1; }
+
+        /* 状态指示灯 */
+        #turing-auto-panel .phase-dot {
+          width: 7px; height: 7px;
+          border-radius: 50%;
+          flex-shrink: 0;
+          display: inline-block;
+        }
+        #turing-auto-panel .phase-dot.green  { background: var(--green); box-shadow: 0 0 8px var(--green); }
+        #turing-auto-panel .phase-dot.red    { background: var(--red); box-shadow: 0 0 8px var(--red); }
+        #turing-auto-panel .phase-dot.gray   { background: #555; }
+        #turing-auto-panel .phase-dot.blue   { background: #2196f3; box-shadow: 0 0 8px rgba(33,150,243,0.6); }
+        #turing-auto-panel .phase-dot.orange { background: var(--orange); box-shadow: 0 0 8px var(--orange); }
+
+        /* 分区卡片 */
+        #turing-auto-panel .section {
+          margin-bottom: 10px;
+          padding: 10px 12px;
+          background: var(--bg-tertiary);
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+        }
+        #turing-auto-panel .section:last-child { margin-bottom: 0; }
+        #turing-auto-panel .section-title {
+          font-size: 10px;
+          color: var(--text-muted);
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          margin-bottom: 8px;
+          font-weight: 600;
+        }
+
+        /* 开关行 */
+        #turing-auto-panel .tog-row {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 5px 0;
+        }
+        #turing-auto-panel .tog-row + .tog-row { border-top: 1px solid rgba(255,255,255,0.03); }
+        #turing-auto-panel .tog-label {
+          font-size: 12px;
+          color: var(--text);
+          flex: 1;
+        }
+        #turing-auto-panel .tog-hint {
+          font-size: 10px;
+          color: var(--text-muted);
+        }
+        #turing-auto-panel .switch {
+          position: relative;
+          width: 36px; height: 20px;
+          background: rgba(255,255,255,0.08);
+          border-radius: 10px;
+          cursor: pointer;
+          transition: background 0.25s;
+          flex-shrink: 0;
+        }
+        #turing-auto-panel .switch.on { background: var(--accent); box-shadow: 0 0 8px var(--accent-glow); }
+        #turing-auto-panel .switch::after {
+          content: '';
+          position: absolute;
+          top: 2px; left: 2px;
+          width: 16px; height: 16px;
+          background: var(--knob-color, #fff);
+          border-radius: 50%;
+          transition: transform 0.25s;
+          box-shadow: 0 1px 3px var(--knob-shadow, rgba(0,0,0,0.3));
+        }
+        #turing-auto-panel .switch.on::after { transform: translateX(16px); }
+        /* 搜索服务状态指示灯 */
+        #turing-auto-panel .search-status {
+          display: inline-block;
+          font-size: 10px;
+          line-height: 1;
+          flex-shrink: 0;
+        }
+        #turing-auto-panel .search-status.active { color: var(--green); }
+        #turing-auto-panel .search-status.inactive { color: #666; }
+        #turing-auto-panel .reset-btn {
+          background: rgba(255,255,255,0.04);
+          border: 1px solid var(--border);
+          color: var(--text-dim);
+          font-size: 10px;
+          padding: 4px 10px;
+          border-radius: 4px;
+          cursor: pointer;
+          white-space: nowrap;
+          transition: all 0.18s;
+        }
+        #turing-auto-panel .reset-btn:hover {
+          background: rgba(248,113,113,0.12);
+          border-color: rgba(248,113,113,0.35);
+          color: var(--red);
+        }
+        #turing-auto-panel .icon-btn {
+          background: var(--bg-tertiary);
+          border: 1px solid var(--border);
+          color: var(--text-dim);
+          font-size: 10px;
+          padding: 3px 8px;
+          border-radius: 4px;
+          cursor: pointer;
+          transition: all 0.18s;
+        }
+        #turing-auto-panel .icon-btn:hover {
+          background: var(--accent-soft);
+          border-color: var(--accent-dark);
+          color: var(--accent);
+        }
+
+        /* 模式切换 */
+        #turing-auto-panel .mode-row {
+          display: flex;
+          gap: 4px;
+          flex-wrap: wrap;
+        }
+        #turing-auto-panel .mode-btn {
+          flex: 1;
+          min-width: 60px;
+          padding: 7px 0;
+          font-size: 11px;
+          background: var(--bg-hover);
+          border: 1px solid var(--border);
+          border-radius: 4px;
+          color: var(--text-muted);
+          cursor: pointer;
+          transition: all 0.2s;
+          white-space: nowrap;
+        }
+        #turing-auto-panel .mode-btn:hover {
+          background: rgba(255,255,255,0.08);
+          color: var(--text-dim);
+        }
+        #turing-auto-panel .mode-btn.active {
+          background: var(--accent-soft);
+          border-color: var(--accent-dark);
+          color: var(--accent);
+          font-weight: 600;
+          box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        /* 延迟滑块 */
+        #turing-auto-panel .delay-row {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 11px;
+          color: var(--text-dim);
+          padding: 5px 0;
+        }
+        #turing-auto-panel .delay-row + .delay-row { border-top: 1px solid rgba(255,255,255,0.03); }
+        #turing-auto-panel .delay-row .lbl { width: 32px; flex-shrink: 0; }
+        #turing-auto-panel .delay-row input[type="range"] {
+          -webkit-appearance: none;
+          flex: 1;
+          height: 4px;
+          background: var(--slider-track, rgba(255,255,255,0.06));
+          border-radius: 2px;
+          outline: none;
+          cursor: pointer;
+          margin: 0;
+        }
+        #turing-auto-panel .delay-row input[type="range"]::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          width: 14px; height: 14px;
+          background: var(--accent);
+          border-radius: 50%;
+          cursor: pointer;
+          box-shadow: 0 0 6px var(--accent-glow);
+        }
+        #turing-auto-panel .delay-row input[type="number"] {
+          width: 52px;
+          height: 24px;
+          background: rgba(0,0,0,0.3);
+          border: 1px solid var(--border);
+          border-radius: 4px;
+          color: var(--text);
+          font-size: 10px;
+          font-family: monospace;
+          text-align: right;
+          padding: 0 5px;
+          outline: none;
+          flex-shrink: 0;
+        }
+        #turing-auto-panel .delay-row input[type="number"]:focus { border-color: var(--accent); }
+        #turing-auto-panel .delay-row .unit { color: var(--text-muted); font-size: 10px; flex-shrink: 0; }
+
+        /* 当前阶段 */
+        #turing-auto-panel .phase-row {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 12px;
+        }
+        #turing-auto-panel .phase-row .phase-icon { font-size: 14px; }
+        #turing-auto-panel .phase-row .phase-label { color: var(--text-muted); }
+        #turing-auto-panel .phase-row .phase-text { color: var(--text); font-weight: 500; }
+
+        /* API 行 */
+        #turing-auto-panel .api-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          font-size: 11px;
+          color: var(--text-muted);
+          padding: 4px 0;
+        }
+        #turing-auto-panel .api-row + .api-row { border-top: 1px solid rgba(255,255,255,0.03); }
+        #turing-auto-panel .api-row .api-label {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+        #turing-auto-panel .api-row .val {
+          color: var(--text-dim);
+          font-family: monospace;
+          font-size: 10px;
+          text-align: right;
+          max-width: 180px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        /* 消息详情 */
+        #turing-auto-panel .msg-row {
+          display: flex;
+          align-items: flex-start;
+          gap: 8px;
+          font-size: 11px;
+          padding: 4px 0;
+        }
+        #turing-auto-panel .msg-row + .msg-row { border-top: 1px solid rgba(255,255,255,0.03); }
+        #turing-auto-panel .msg-row .label {
+          width: 32px;
+          flex-shrink: 0;
+          color: var(--text-muted);
+        }
+        #turing-auto-panel .msg-row .content {
+          flex: 1;
+          color: var(--text-dim);
+          word-break: break-all;
+          line-height: 1.4;
+        }
+
+        /* 对话记录 */
+        #turing-auto-panel .chatlog-list {
+          font-size: 10px;
+          line-height: 1.55;
+          max-height: 100px;
+          overflow-y: auto;
+        }
+        #turing-auto-panel .chatlog-list .cl-opponent { color: var(--orange); }
+        #turing-auto-panel .chatlog-list .cl-reply { color: var(--green); }
+        #turing-auto-panel .chatlog-list .cl-line { margin-bottom: 3px; word-break: break-all; }
+
+        /* 对手分析 */
+        #turing-auto-panel .analyze-bar {
+          display: flex;
+          height: 6px;
+          border-radius: 3px;
+          overflow: hidden;
+          background: rgba(255,255,255,0.05);
+          margin-bottom: 6px;
+        }
+        #turing-auto-panel .analyze-bar .bar-human { background: var(--green); transition: width 0.3s; box-shadow: 0 0 6px rgba(74,222,128,0.5); }
+        #turing-auto-panel .analyze-bar .bar-ai { background: var(--red); transition: width 0.3s; box-shadow: 0 0 6px rgba(248,113,113,0.5); }
+        #turing-auto-panel .analyze-counts {
+          display: flex;
+          justify-content: space-between;
+          font-size: 10px;
+          color: var(--text-muted);
+        }
+        #turing-auto-panel .analyze-counts .h-count { color: var(--green); font-family: monospace; }
+        #turing-auto-panel .analyze-counts .a-count { color: var(--red); font-family: monospace; }
+        #turing-auto-panel .analyze-final {
+          font-size: 10px;
+          color: var(--text-dim);
+          margin-top: 6px;
+          text-align: center;
+          padding-top: 5px;
+          border-top: 1px solid rgba(255,255,255,0.04);
+        }
+
+        /* 统计行 */
+        #turing-auto-panel .stats-row {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          font-size: 11px;
+          color: var(--text-muted);
+          flex-wrap: wrap;
+        }
+        #turing-auto-panel .stats-row .stat-item {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        }
+        #turing-auto-panel .stats-row .num {
+          color: var(--accent);
+          font-weight: 600;
+          font-family: monospace;
+        }
+        #turing-auto-panel .stats-row .judge-time {
+          margin-left: auto;
+          font-size: 10px;
+          color: var(--text-muted);
+          white-space: nowrap;
+        }
+
+        /* 日志 */
+        #turing-auto-panel .logs {
+          font-size: 10px;
+          color: var(--text-muted);
+          line-height: 1.7;
+          max-height: 200px;
+          overflow-y: auto;
+        }
+        #turing-auto-panel .logs div {
+          overflow: hidden;
+          word-break: break-all;
+          padding: 1px 0;
+        }
+        #turing-auto-panel .logs div:first-child { color: var(--text-dim); }
+
+        /* 搜索服务状态 */
+        #turing-auto-panel .search-service-bar {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 6px 10px;
+          margin-bottom: 8px;
+          border-radius: 5px;
+          font-size: 11px;
+          font-weight: 600;
+          transition: all 0.3s;
+        }
+        #turing-auto-panel .search-service-bar.online {
+          background: rgba(74,222,128,0.1);
+          border: 1px solid rgba(74,222,128,0.3);
+          color: var(--green);
+        }
+        #turing-auto-panel .search-service-bar.offline {
+          background: rgba(248,113,113,0.08);
+          border: 1px solid rgba(248,113,113,0.25);
+          color: var(--red);
+        }
+        #turing-auto-panel .search-service-bar .ss-dot {
+          width: 8px; height: 8px;
+          border-radius: 50%;
+          flex-shrink: 0;
+          animation: ss-pulse 1.5s infinite;
+        }
+        #turing-auto-panel .search-service-bar.online .ss-dot {
+          background: var(--green);
+          box-shadow: 0 0 8px var(--green);
+        }
+        #turing-auto-panel .search-service-bar.offline .ss-dot {
+          background: var(--red);
+          box-shadow: 0 0 8px var(--red);
+          animation: none;
+        }
+        @keyframes ss-pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.4; }
+        }
+
+        /* 入场动画（与脚本 splash 一致） */
+        @keyframes hack-scanline {
+          0% { background-position: 0 -100%; }
+          100% { background-position: 0 200%; }
+        }
+        @keyframes hack-glitch-in {
+          0% { opacity: 0; transform: scale(0.9) skewX(-2deg); filter: blur(8px) brightness(2); }
+          15% { opacity: 0.6; transform: scale(1.05) skewX(1deg); filter: blur(0) brightness(1.5); }
+          30% { opacity: 0.4; transform: scale(0.95) skewX(-0.5deg); filter: blur(2px) brightness(0.8); }
+          45% { opacity: 0.9; transform: scale(1.02) skewX(0.3deg); filter: blur(0) brightness(1.2); }
+          60% { opacity: 0.7; transform: scale(0.98); filter: blur(1px) brightness(0.9); }
+          80% { opacity: 1; transform: scale(1); filter: blur(0) brightness(1); }
+          100% { opacity: 1; transform: scale(1); filter: none; }
+        }
+        @keyframes hack-fade-out {
+          0% { opacity: 1; }
+          70% { opacity: 1; }
+          100% { opacity: 0; }
+        }
+        @keyframes hack-text-scroll {
+          0% { width: 0; }
+          100% { width: 100%; }
+        }
+        @keyframes hack-dot-pulse {
+          0%, 100% { opacity: 0.3; }
+          50% { opacity: 1; }
+        }
+
+        /* API 配置组 */
+        #turing-auto-panel .api-config-group {
+          transition: border-color 0.2s;
+        }
+        #turing-auto-panel .api-config-group:hover {
+          border-color: var(--accent-dark) !important;
+        }
+        #turing-auto-panel .api-select-btn {
+          background: rgba(255,255,255,0.05);
+          border: 1px solid var(--border);
+          border-radius: 3px;
+          color: var(--text);
+          cursor: pointer;
+          transition: all 0.18s;
+        }
+        #turing-auto-panel .api-select-btn:hover {
+          background: var(--accent-soft);
+          border-color: var(--accent-dark);
+          color: var(--accent);
+        }
+        #turing-auto-panel .api-del-btn {
+          cursor: pointer;
+          transition: all 0.18s;
+        }
+        #turing-auto-panel .api-del-btn:hover {
+          background: rgba(248,113,113,0.2) !important;
+        }
+
+        /* 输入框通用 */
+        #turing-auto-panel input[type="text"],
+        #turing-auto-panel input[type="password"],
+        #turing-auto-panel textarea {
+          background: rgba(0,0,0,0.3);
+          border: 1px solid var(--border);
+          border-radius: 4px;
+          color: var(--text);
+          font-size: 11px;
+          padding: 5px 8px;
+          outline: none;
+          font-family: inherit;
+          transition: border-color 0.2s;
+        }
+        #turing-auto-panel input[type="text"]:focus,
+        #turing-auto-panel input[type="password"]:focus,
+        #turing-auto-panel textarea:focus {
+          border-color: var(--accent);
+        }
+        #turing-auto-panel select {
+          background: rgba(0,0,0,0.3);
+          border: 1px solid var(--border);
+          border-radius: 4px;
+          color: var(--text);
+          font-size: 11px;
+          padding: 5px 8px;
+          outline: none;
+          cursor: pointer;
+          transition: border-color 0.2s;
+        }
+        #turing-auto-panel select:focus {
+          border-color: var(--accent);
+        }
+        #turing-auto-panel button:hover {
+          filter: brightness(1.2);
+        }
+        #turing-auto-panel button:active {
+          filter: brightness(0.9);
+        }
+
+        /* ============================================================
+           
+  #turing-auto-panel .tui-note{
+    font-size:11px;color:#fca5a5;margin-top:12px;padding:9px 12px;
+    border:1px dashed rgba(244,63,94,.4);border-radius:8px;background:rgba(244,63,94,.06);line-height:1.7;
+  }
+  /* 移动端:面板缩小(悬浮球由 body.is-mobile 控制) */
+  @media (max-width:600px){
+    .kbd-hint{display:none}
+    #turing-auto-panel{
+      width:min(96vw,900px);height:min(92vh,580px);
+      box-shadow:0 0 60px rgba(124,58,237,.3);
+    }
+    #turing-auto-panel .nav-sidebar{width:150px;min-width:150px}
+    #turing-auto-panel .nav-item{font-size:10px;padding:9px 10px}
+    #turing-auto-panel .nav-user-name,#turing-auto-panel #turing-power-label{display:none}
+    #turing-auto-panel #turing-search-input{width:110px}
+  }
+</style>
+</head>
+<body id="page-body">
+<div class="bg-grid"></div>
+<div class="bg-orb orb-1"></div>
+<div class="bg-orb orb-2"></div>
+<div class="bg-orb orb-3"></div>
+
+<!-- 入场启动画面（与脚本一致） -->
+<div id="turing-splash" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(8,8,15,0.85);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);z-index:10000000;display:flex;flex-direction:column;align-items:center;justify-content:center;animation:hack-fade-out .4s ease-out 2.2s forwards;pointer-events:all;">
+  <style>
+    #turing-splash .splash-title, #turing-splash .splash-subtitle, #turing-splash .splash-logs span, #turing-splash .splash-accent {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", "Helvetica Neue", Arial, sans-serif;
+    }
+    #turing-splash .splash-title { color: #c084fc; text-shadow: 0 0 30px rgba(192,132,252,.6), 0 0 60px rgba(192,132,252,.3); }
+    #turing-splash .splash-bar-fill { background: #c084fc; box-shadow: 0 0 12px rgba(192,132,252,.5); }
+    #turing-splash .splash-logs .dot { color: #c084fc; }
+    #turing-splash .splash-accent { color: #c084fc; }
+  </style>
+  <div class="splash-inner" style="display:flex;flex-direction:column;align-items:center;gap:20px;animation:hack-glitch-in .6s cubic-bezier(.25,.46,.45,.94) forwards;">
+    <div class="splash-title" style="font-size:42px;font-weight:900;letter-spacing:8px;text-transform:uppercase;">TURING AI</div>
+    <div class="splash-subtitle" style="font-size:14px;color:#9898b8;letter-spacing:4px;">图灵伪装系统 v1.5</div>
+    <div class="splash-bar" style="width:320px;height:3px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;">
+      <div class="splash-bar-fill" style="height:100%;animation:hack-text-scroll 1.5s ease-out forwards;"></div>
+    </div>
+    <div class="splash-logs" style="font-size:12px;color:#b0b0cc;text-align:left;width:320px;line-height:1.8;letter-spacing:.5px;">
+      <span style="display:block;">[SYS] 初始化引擎<span class="dot" style="animation:hack-dot-pulse .6s infinite;">...</span></span>
+      <span style="display:block;">[SYS] 加载伪装策略<span class="dot" style="animation:hack-dot-pulse .6s infinite;animation-delay:.2s">...</span></span>
+      <span style="display:block;">[SYS] 注入AI模型<span class="dot" style="animation:hack-dot-pulse .6s infinite;animation-delay:.4s">...</span></span>
+      <span class="splash-accent" style="display:block;">[SYS] 系统就绪 - 按 Insert 打开控制台</span>
+    </div>
+  </div>
+</div>
+
+<nav>
+  <div class="wrap">
+    <div class="brand"><div class="logo">⟠</div>图灵AI辅助</div>
+    <div class="nav-links">
+      <a href="#download">下载专区</a>
+      <a href="#features">核心能力</a>
+      <a href="#preview">界面预览</a>
+      <a href="#install">安装</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <a class="nav-cta" href="#download">立即下载</a>
+  </div>
+</nav>
+
+<header>
+  <div class="wrap">
+    <div class="badge"><span class="dot"></span>V1.5 · 全新发布 · 免费</div>
+    <h1>图灵AI辅助</h1>
+    <p class="sub">一款注入浏览器的高端 AI 伪装引擎 —— 监听网页图灵测试全流程，自动生成真人级回复、实时预判对手真伪、智能判定一键结算，并自动开启下一局。</p>
+    <p style="margin-top:10px;color:#8a94c6;font-size:13.5px;letter-spacing:1px">仅适配电脑客户端：Windows 10 / 11 · Chrome / Edge / Firefox</p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="#download"><span class="ic">⬇</span>查看下载专区</a>
+      <a class="btn btn-ghost" href="#install"><span class="ic">⚙</span>安装教程</a>
+    </div>
+    <p style="margin-top:16px;font-size:12.5px;color:#8a94c6">版本 V1.5 · 平台 Windows 10 / 11 · 浏览器 Chrome / Edge / Firefox。<br>本项目开源在 <a href="https://github.com/KLP-KULIPA-24/Turing-AI-Tools" target="_blank" style="color:#a5b4fc">github.com/KLP-KULIPA-24/Turing-AI-Tools</a></p>
+    <div class="meta">
+      <span><i>✔</i> 版本 V1.5</span>
+      <span><i>✔</i> 支持连续对局自动匹配</span>
+      <span><i>✔</i> 数据本地保存</span>
+      <span><i>✔</i> 免费使用</span>
+    </div>
+
+    <div class="terminal">
+      <div class="term-bar"><span class="t t1"></span><span class="t t2"></span><span class="t t3"></span><span class="term-title">图灵AI · 实时工作台</span></div>
+      <div class="term-body" id="term"></div>
+    </div>
+  </div>
+</header>
+
+<section id="download">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-tag">DOWNLOAD</span>
+      <h2>下载专区</h2>
+      <p>按平台与版本选择，认准你的 CPU 架构再下载</p>
+    </div>
+    <div class="dl-group">
+      <div class="dl-card">
+        <div class="dl-os"><span>🪟</span>Windows <small>v1.5</small></div>
+        <table>
+          <tr><td><span class="chip">amd64</span> 64 位 · x64</td><td><span class="chip">✓</span></td><td><a class="dl-btn" href="https://gh.xmly.dev/https://github.com/KLP-KULIPA-24/Turing-AI-Tools/releases/download/%E5%9B%BE%E7%81%B5AI%E5%B7%A5%E5%85%B7/Turing.AI.Toolkit.Windows.amd64.zip" target="_blank">下载</a></td></tr>
+          <tr><td><span class="chip">arm64</span> 64 位 · ARM</td><td><span class="chip">✓</span></td><td><a class="dl-btn" href="https://gh.xmly.dev/https://github.com/KLP-KULIPA-24/Turing-AI-Tools/releases/download/%E5%9B%BE%E7%81%B5AI%E5%B7%A5%E5%85%B7/Turing.AI.Toolkit.Windows.arm64.zip" target="_blank">下载</a></td></tr>
+          <tr><td><span class="chip">386</span> 32 位 · x86</td><td><span class="chip">✓</span></td><td><a class="dl-btn" href="https://gh.xmly.dev/https://github.com/KLP-KULIPA-24/Turing-AI-Tools/releases/download/%E5%9B%BE%E7%81%B5AI%E5%B7%A5%E5%85%B7/Turing.AI.Toolkit.Windows.386.zip" target="_blank">下载</a></td></tr>
+          <tr><td><span class="chip">browser</span> 💬 微信客户端 V1.0（自建客户端，含自动抓包）</td><td><span class="chip">✓</span></td><td><a class="dl-btn" href="https://gh.xmly.dev/https://github.com/KLP-KULIPA-24/Turing-AI-Tools/releases/download/%E5%9B%BE%E7%81%B5AI%E5%B7%A5%E5%85%B7/AnyAnygame.Wechat.Client.zip" target="_blank">下载</a></td></tr>
+        </table>
+      </div>
+      <div class="dl-card">
+        <div class="dl-os"><span>🍎</span>macOS <small class="soon">v2.0 待发布</small></div>
+        <table>
+          <tr><td><span class="chip">arm64</span> Apple 芯片</td><td><span class="soon-tag">V2.0</span></td><td><a class="dl-btn off" href="javascript:void(0)">敬请期待</a></td></tr>
+          <tr><td><span class="chip">amd64</span> Intel 芯片</td><td><span class="soon-tag">V2.0</span></td><td><a class="dl-btn off" href="javascript:void(0)">敬请期待</a></td></tr>
+        </table>
+      </div>
+      <div class="dl-card">
+        <div class="dl-os"><span>🐧</span>Linux <small class="soon">v2.0 待发布</small></div>
+        <table>
+          <tr><td><span class="chip">amd64</span> 64 位</td><td><span class="soon-tag">V2.0</span></td><td><a class="dl-btn off" href="javascript:void(0)">敬请期待</a></td></tr>
+          <tr><td><span class="chip">arm64</span> 64 位</td><td><span class="soon-tag">V2.0</span></td><td><a class="dl-btn off" href="javascript:void(0)">敬请期待</a></td></tr>
+          <tr><td><span class="chip">386</span> 32 位</td><td><span class="soon-tag">V2.0</span></td><td><a class="dl-btn off" href="javascript:void(0)">敬请期待</a></td></tr>
+        </table>
+      </div>
+      <div class="dl-card">
+        <div class="dl-os"><span>📱</span>移动端 <small class="soon">V2.0 待发布</small></div>
+        <table>
+          <tr><td><span class="chip">Android / iOS</span> 手机 · 平板</td><td><span class="soon-tag">V2.0</span></td><td><a class="dl-btn off" href="javascript:void(0)">敬请期待</a></td></tr>
+        </table>
+      </div>
+    </div>
+    <p class="dl-note">如何选 Windows 架构：设置 → 系统 → 关于 →「系统类型」：<b>基于 x64 的处理器</b> → amd64；<b>基于 ARM 的处理器</b> → arm64；32 位系统（x86）→ 386。<br>更精确：`cmd` 中运行 <code>echo %PROCESSOR_ARCHITECTURE%</code>，输出 <code>AMD64</code> / <code>ARM64</code> / <code>x86</code> 对应上表。macOS / Linux / 移动端将在 V2.0 发布。<br>本项目开源在 <a href="https://github.com/KLP-KULIPA-24/Turing-AI-Tools" target="_blank" style="color:#a5b4fc">github.com/KLP-KULIPA-24/Turing-AI-Tools</a></p>
+  </div>
+</section>
+
+<section id="features">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-tag">CORE FEATURES</span>
+      <h2>核心能力</h2>
+      <p>从监听、伪装到判定、连战，全流程自动化</p>
+    </div>
+    <div class="grid" id="feature-cards"></div>
+  </div>
+</section>
+
+<section id="flow" style="background:rgba(255,255,255,.012);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-tag">WORKFLOW</span>
+      <h2>工作流程</h2>
+      <p>从进入房间到战绩落库，全程无人值守</p>
+    </div>
+    <div class="flow" id="flow-steps"></div>
+  </div>
+</section>
+
+<section id="stats">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-tag">BENCHMARK</span>
+      <h2>数据指标</h2>
+    </div>
+    <div class="dash" id="stat-cards"></div>
+  </div>
+</section>
+
+<section id="preview" style="background:rgba(255,255,255,.012);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-tag">LIVE PREVIEW</span>
+      <h2>界面预览</h2>
+      <p>脚本注入后的悬浮控制台 1:1 复刻 · 纯展示，功能无效，仅演示外观与交互</p>
+    </div>
+    <div class="demo-wrap">
+      <div class="demo-stage" id="demo-stage">
+        <div class="demo-browser">
+          <span class="demo-bubble-a"></span><span class="demo-bubble-b"></span><span class="demo-bubble-g"></span>
+          <span class="demo-url" id="demo-url">game.xfcode.top · 图灵测试</span>
+        </div>
+        <!-- 主页 -->
+        <div class="demo-landing show" id="demo-landing">
+          <h2>屏幕那边的家伙，<br>真的是人吗？🤔</h2>
+          <p>系统会随机连线一个陌生对象。你们要在聊天中试探彼此，猜猜对方是人类还是 AI 机器人。</p>
+          <div style="font-size:13px;color:var(--accent);margin-bottom:8px">👤 苦力怕.KULIPA</div>
+          <button class="demo-start-btn" id="demo-start-btn">马上开始匹配</button>
+        </div>
+        <!-- 匹配中 -->
+        <div class="demo-matching" id="demo-matching">
+          <h3>正在为你寻找对手...</h3>
+          <p>稍等一下，马上就好</p>
+          <div class="match-dots"><span></span><span></span><span></span></div>
+        </div>
+        <!-- 聊天室 -->
+        <div class="demo-chat" id="demo-chat" style="display:none">
+          <div class="demo-msg left"><div class="dm-info">对方 (10:03:21)</div><div class="dm-bubble">你不是真人吧？怎么回这么快。</div></div>
+          <div class="demo-msg right"><div class="dm-info">苦力怕.KULIPA (10:03:24)</div><div class="dm-bubble">哈哈紧张了？我先看看你像不像人😏</div></div>
+          <div class="demo-msg left"><div class="dm-info">对方 (10:03:40)</div><div class="dm-bubble">……行，那来个追问测试</div></div>
+          <div class="demo-msg right"><div class="dm-info">苦力怕.KULIPA (10:03:45)</div><div class="dm-bubble">请便～等我网络搜索一下你的套路</div></div>
+        </div>
+        <!-- 输入框 -->
+        <div class="demo-inputbar" id="demo-inputbar" style="display:none">
+          <input type="text" id="demo-chat-input" placeholder="写点什么试探一下..." autocomplete="off" maxlength="300">
+          <span id="demo-char-count" style="font-size:11px;color:var(--tx2);margin-right:8px;white-space:nowrap;align-self:center">0/300</span>
+          <button class="demo-send" id="demo-send-btn">发送</button>
+        </div>
+        <!-- 判定区域 -->
+        <div class="demo-verdict-zone" id="demo-verdict">
+          <div class="demo-verdict-info">
+            <div class="dv-title">🎯 锁定你的答案</div>
+            <div class="dv-hint">选定后就不能反悔咯</div>
+          </div>
+          <div class="demo-verdict-btns">
+            <button id="demo-verdict-human" class="demo-verdict-human">它是人类</button>
+            <button id="demo-verdict-ai" class="demo-verdict-ai">它是 AI</button>
+          </div>
+        </div>
+        <!-- 再来一局 -->
+        <div class="demo-result" id="demo-result">
+          <h3 id="demo-result-title">对局结束</h3>
+          <div class="result-verdict" id="demo-result-verdict"></div>
+          <p id="demo-result-hint"></p>
+          <button class="demo-start-btn" id="demo-restart-btn">再来一局</button>
+        </div>
+      </div>
+      <p class="demo-hint">点击「马上开始匹配」体验完整流程 · 按 <b>Insert</b> 键打开/关闭控制台 · 面板 1:1 复刻脚本控制台，仅样式交互</p>
+    </div>
+  </div>
+</section>
+
+<!-- 手机端悬浮球（可拖动） -->
+<div class="tui-ball" id="tui-ball" title="图灵AI控制台（演示）">TUI</div>
+
+<!-- 1:1 复刻脚本控制台(与原脚本注入面板 1:1，纯静态演示) -->
+<div id="turing-auto-panel">
+  <div class="inner">
+        <!-- 左侧导航栏 -->
+        <div class="nav-sidebar">
+          <div class="nav-brand"><img class="nav-brand-icon" alt="logo" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAADMSURBVGhD7c/BCQNBCEbhLWVLSJEpLIUFsnjI5RFQR4ks8x++y8Co7zjPx+fODj7cjQKmKWCaAqYpYJoCpimAXs+3i38q2gJ4ZARnrGgJ4GEZnJVVDuBBKzgzoxTAQyo4O2o5gAd04I6IPQO4uBN3eRTQjbs8+wVwYTfu86QDDJd24i6PArpxl2fPAMPFHbgjYt8AwwMqODuqFGB4yArOzCgHGB6UwVlZLQGGh0Vwxoq2gC8e+Qv/VLQH/JsCpilgmgKmKWCaAqbdPuAC+IQB0T/+8WMAAAAASUVORK5CYII=">TURING AI</div>
+          <div class="nav-items">
+            <div class="nav-item active" data-tab="aim">
+              <span class="nav-icon">⚡</span>图灵AI
+            </div>
+            <div class="nav-item" data-tab="logs">
+              <span class="nav-icon">📋</span>日志
+            </div>
+            <div class="nav-item" data-tab="stats">
+              <span class="nav-icon">📊</span>统计
+            </div>
+            <div class="nav-item" data-tab="configs">
+              <span class="nav-icon">⚙</span>配置
+            </div>
+            <div class="nav-item" data-tab="params">
+              <span class="nav-icon">📦</span>参数
+            </div>
+            <div class="nav-item" data-tab="scripts">
+              <span class="nav-icon">📜</span>脚本
+            </div>
+            <div class="nav-item" data-tab="settings">
+              <span class="nav-icon">🔧</span>设置
+            </div>
+            <div class="nav-item" data-tab="sites">
+              <span class="nav-icon">🌐</span>网站
+            </div>
+          </div>
+          <div class="nav-footer">
+            <div class="nav-user">
+              <div class="nav-user-avatar" id="turing-user-avatar" style="background:url('苦力怕.KULIPA头像【圆形】.png') center/cover no-repeat;"></div>
+              <span class="nav-user-name" id="turing-user-name">苦力怕.KULIPA</span>
+            </div>
+            <span class="power-dot on" id="turing-power-dot"></span>
+            <span id="turing-power-label">运行中</span>
+          </div>
+        </div>
+
+        <!-- 右侧内容区 -->
+        <div class="content-area">
+          <div class="content-header">
+            <span id="turing-header-title">图灵AI 控制台</span>
+            <span class="header-search">
+              <input type="text" id="turing-search-input" placeholder="🔍 搜索功能/设置…" autocomplete="off" spellcheck="false">
+            </span>
+            <span class="mode-badge" id="turing-mode-badge">伪装AI</span><span id="turing-version-badge" style="font-size:9px;font-weight:400;color:#4ade80;letter-spacing:0;margin-left:4px;">V1.5</span>
+          </div>
+          <div class="content-body">
+            <!-- Tab: 图灵AI -->
+            <div class="tab-content active" id="tab-aim">
+              <!-- 搜索服务状态 -->
+              <div class="search-service-bar online">
+                <span class="ss-dot"></span>
+                <span>搜索服务在线</span>
+              </div>
+
+              <div class="aim-cols">
+                <div class="aim-col">
+                  <!-- 开关区 -->
+                  <div class="section">
+                    <div class="section-title">控制面板</div>
+                    <div class="tog-row">
+                      <span class="tog-label" data-static="1">自动回复</span>
+                      <span class="tog-hint" id="turing-toggle-hint">已关闭</span>
+                      <div class="switch" id="turing-toggle"></div>
+                      <button class="reset-btn" id="turing-reset" title="重置状态，准备下一局">🔄 下一局</button>
+                    </div>
+                    <div class="tog-row">
+                      <span class="tog-label">全自动匹配</span>
+                      <span class="tog-hint" id="turing-auto-match-hint" style="display:none;">结束后自动继续</span>
+                      <div class="switch" id="turing-auto-match"></div>
+                    </div>
+                    <div class="tog-row">
+                      <span class="tog-label">思考链</span>
+                      <span class="tog-hint" id="turing-thinking-hint" style="display:none;">推理过程也发送</span>
+                      <div class="switch " id="turing-thinking"></div>
+                    </div>
+                    <div class="tog-row">
+                      <span class="tog-label">网页搜索</span>
+                      <span class="search-status active" title="搜索服务运行中">●</span>
+                      <span class="tog-hint" id="turing-search-hint" style="">AI可上网查资料</span>
+                      <div class="switch on" id="turing-search"></div>
+                    </div>
+                    <div class="tog-row">
+                      <span class="tog-label">自动注册新号</span>
+                      <span class="tog-hint" id="turing-auto-register-hint" style="display:none;">验证手机号时自动切号</span>
+                      <div class="switch " id="turing-auto-register"></div>
+                    </div>
+                  </div>
+
+                  <!-- 当前阶段 -->
+                  <div class="section">
+                    <div class="section-title">状态</div>
+                    <div class="phase-row">
+                      <span class="phase-icon" id="turing-phase-icon">⏳</span>
+                      <span class="phase-label">状态</span>
+                      <span class="phase-text" id="turing-phase-text">初始化中…</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="aim-col">
+                  <!-- 模式 -->
+                  <div class="section">
+                    <div class="section-title">聊天模式</div>
+                    <div class="mode-row">
+                      <button class="mode-btn active" data-mode="FAKE_AI">伪装AI</button>
+                      <button class="mode-btn " data-mode="NORMAL">正常</button>
+                      <button class="mode-btn " data-mode="FAKE_HUMAN">伪装真人</button>
+                      <button class="mode-btn " data-mode="TAUNT">嘲讽</button>
+                    </div>
+                  </div>
+
+                  <!-- API 状态 -->
+                  <div class="section">
+                    <div class="section-title">API 状态</div>
+                    <div class="api-row">
+                      <span class="api-label">
+                        <span class="phase-dot green" id="turing-api-dot"></span>
+                        连接
+                      </span>
+                      <span class="val" id="turing-api-status-label">已连接</span>
+                    </div>
+                    <div class="api-row">
+                      <span class="api-label">模型</span>
+                      <span class="val" id="turing-model" style="color:#4ade80;">agnes-2.5-flash</span>
+                    </div>
+                    <div class="api-row">
+                      <span class="api-label">调用次数</span>
+                      <span class="val" id="turing-api-count">0</span>
+                    </div>
+                    <div class="api-row">
+                      <span class="api-label">最近响应</span>
+                      <span class="val" id="turing-api-time">-</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab: 配置 -->
+            <div class="tab-content" id="tab-configs">
+              <!-- 延迟 -->
+              <div class="section">
+                <div class="section-title">延迟范围</div>
+                <div class="delay-row">
+                  <span class="lbl">最小</span>
+                  <input type="range" id="turing-delay-min" min="0" max="10000" value="1000" step="100">
+                  <input type="number" id="turing-delay-min-num" min="0" max="10000" value="1000" step="100">
+                  <span class="unit">ms</span>
+                </div>
+                <div class="delay-row">
+                  <span class="lbl">最大</span>
+                  <input type="range" id="turing-delay-max" min="0" max="20000" value="3000" step="100">
+                  <input type="number" id="turing-delay-max-num" min="0" max="20000" value="3000" step="100">
+                  <span class="unit">ms</span>
+                </div>
+              </div>
+
+              <!-- 广告 -->
+              <div class="section">
+                <div class="section-title">广告</div>
+                <div class="tog-row">
+                  <span class="tog-label">启用广告</span>
+                  
+                  <div class="switch " id="turing-ad-toggle"></div>
+                </div>
+                <div style="margin-top:6px;">
+                  <textarea id="turing-ad-input" class="code" placeholder="输入广告内容，开局抢先发送问候语后自动发送…" style="width:100%;height:50px;background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:11px;padding:6px 8px;resize:vertical;outline:none;font-family:Consolas,'Courier New',monospace;"></textarea>
+                </div>
+              </div>
+
+              <!-- API 设置 -->
+              <div class="section">
+                <div class="section-title" style="cursor:pointer;" id="turing-api-settings-title">⚙ API 配置 <span style="font-size:10px;color:#999;">▲</span></div>
+                <div id="turing-api-settings-body" style="display:block;">
+                  <div class="api-config-groups" style="margin-bottom:8px;">
+                  <div class="api-config-group" data-config-index="0" style="border:1px solid var(--accent);border-radius:6px;padding:8px;margin-bottom:8px;background:rgba(192,132,252,0.08);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+        <span style="font-size:11px;font-weight:bold;color:var(--accent);">Agnes纯公益AI站</span>
+        <span style="display:flex;gap:4px;">
+          <span style="font-size:10px;color:var(--accent);padding:2px 6px;border-radius:3px;border:1px solid var(--accent);">当前</span>
+          <button class="api-del-btn" data-index="0" style="font-size:10px;padding:2px 6px;border:1px solid rgba(255,80,80,0.3);border-radius:3px;background:rgba(255,80,80,0.1);color:#f55;" title="删除"><b>x</b></button>
+        </span>
+      </div>
+      <div style="font-size:9px;color:#888;word-break:break-all;">https://api.agnes-ai.cn/v1/chat/completions…</div>
+      <div style="font-size:9px;color:#888;">模型: agnes-2.5-flash</div>
+    </div>
+                </div>
+                <div style="margin-bottom:6px;">
+                    <label style="font-size:10px;color:var(--accent);">+ 新增自定义配置</label>
+                  </div>
+                  <div style="margin-bottom:4px;">
+                    <select id="turing-provider-select" style="width:100%;background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:11px;padding:4px 6px;outline:none;">
+                      <option value="">🏷 选择提供商（可选）</option>
+                      <option value="https://api.openai.com/v1">OpenAI</option>
+                      <option value="https://api.deepseek.com/v1">DeepSeek</option>
+                      <option value="https://api.moonshot.cn/v1">Moonshot（Kimi）</option>
+                      <option value="https://api.anthropic.com/v1">Anthropic Claude</option>
+                      <option value="https://api.agnes-ai.cn/v1">Agnes(China)</option>
+                    </select>
+                  </div>
+                  <div style="margin-bottom:4px;">
+                    <input id="turing-api-label-input" type="text" placeholder="配置名称（提供商/备注）" style="width:100%;">
+                  </div>
+                  <div style="margin-bottom:4px;">
+                    <input id="turing-api-url-input" type="text" placeholder="API 地址（可只填域名或 /v1）" style="width:100%;">
+                  </div>
+                  <div style="margin-bottom:4px;">
+                    <input id="turing-api-key-input" type="password" placeholder="API 密钥 sk-..." style="width:100%;">
+                  </div>
+                  <div style="margin-bottom:4px;display:flex;gap:6px;">
+                    <input id="turing-model-name-input" type="text" placeholder="模型名称（可点右侧自动获取）" style="flex:1;">
+                    <button id="turing-fetch-models" style="padding:4px 8px;background:rgba(74,222,128,0.15);border:1px solid rgba(74,222,128,0.4);border-radius:4px;color:#4ade80;font-size:10px;cursor:pointer;white-space:nowrap;">🔃 获取模型</button>
+                  </div>
+                  <div style="margin-bottom:8px;" id="turing-model-select-wrap" hidden>
+                    <select id="turing-model-select" style="width:100%;background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:11px;padding:4px 6px;outline:none;"></select>
+                  </div>
+                  <button id="turing-api-save" style="width:100%;padding:6px;background:var(--accent);border:none;border-radius:4px;color:#fff;font-size:11px;cursor:pointer;">💾 添加配置 & 重连</button>
+                <div style="margin-top:8px;padding:8px 10px;background:rgba(100,140,255,0.08);border:1px solid rgba(100,140,255,0.2);border-radius:4px;">
+                  <span style="font-size:10px;color:var(--text-muted);">💡 没有API模型？去这里获取免费API Key：</span><br>
+                  <a href="https://platform.agnes-ai.cn/settings/apiKeys" target="_blank" style="font-size:10px;color:var(--accent);text-decoration:underline;">platform.agnes-ai.cn/settings/apiKeys</a>
+                </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab: 参数 -->
+            <div class="tab-content" id="tab-params">
+              <div class="section">
+                <div class="section-title">参数管理</div>
+                <div style="display:flex;gap:6px;margin-bottom:8px;">
+                  <select id="turing-cfg-select" style="flex:1;background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:11px;padding:4px 6px;outline:none;">
+                    <option value="0" selected="selected">Agnes纯公益AI站</option>
+                  </select>
+                  <button id="turing-cfg-add" style="padding:4px 8px;background:var(--bg-hover);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:10px;cursor:pointer;">+新增</button>
+                  <button id="turing-cfg-rename" style="padding:4px 8px;background:var(--bg-hover);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:10px;cursor:pointer;">✏改名</button>
+                  <button id="turing-cfg-del" style="padding:4px 8px;background:rgba(255,80,80,0.1);border:1px solid rgba(255,80,80,0.3);border-radius:4px;color:#f55;font-size:10px;cursor:pointer;">x</button>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;font-size:10px;color:var(--text-muted);">
+                  <label style="display:flex;align-items:center;gap:4px;cursor:pointer;">
+                    <input type="checkbox" id="turing-cfg-autoload" checked>
+                    ✨ 待机自动加载本组；未勾选任何组时走"Agnes纯公益AI站"组
+                  </label>
+                </div>
+                <textarea id="turing-cfg-editor" class="code" style="width:100%;height:160px;background:rgba(0,0,0,0.35);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:11px;padding:6px 8px;resize:vertical;outline:none;font-family:Consolas,'Courier New',monospace;" placeholder="输入参数内容（CFG格式）...">{
+  "apiUrl": "https://api.agnes-ai.cn/v1",
+  "apiKey": "sk-XXXX",
+  "modelName": "agnes-2.5-flash",
+  "temperature": 0.7,
+  "chatMode": "fake_ai",
+  "minDelay": 1000,
+  "maxDelay": 3000,
+  "adContent": "",
+  "userScripts": []
+}}</textarea>
+                <div style="display:flex;gap:6px;margin-top:8px;">
+                  <button id="turing-cfg-save" style="flex:1;padding:6px;background:var(--accent);border:none;border-radius:4px;color:#fff;font-size:11px;cursor:pointer;">💾 保存参数</button>
+                  <button id="turing-cfg-load" style="flex:1;padding:6px;background:rgba(74,222,128,0.2);border:1px solid rgba(74,222,128,0.5);border-radius:4px;color:#4ade80;font-size:11px;cursor:pointer;">🔄 加载参数</button>
+                </div>
+                <div style="display:flex;gap:6px;margin-top:6px;">
+                  <button id="turing-cfg-export" style="flex:1;padding:6px;background:var(--bg-hover);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:11px;cursor:pointer;">📥 导出.cfg</button>
+                  <button id="turing-cfg-import" style="flex:1;padding:6px;background:var(--bg-hover);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:11px;cursor:pointer;">📤 导入.cfg</button>
+                </div>
+                <input type="file" id="turing-cfg-file-input" accept=".cfg" style="display:none;">
+              </div>
+            </div>
+
+            <!-- Tab: 脚本 -->
+            <div class="tab-content" id="tab-scripts">
+              <div class="section">
+                <div class="section-title">JavaScript 脚本</div>
+                <div style="display:flex;gap:6px;margin-bottom:8px;">
+                  <select id="turing-script-select" style="flex:1;background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:11px;padding:4px 6px;outline:none;">
+                    <option value="0" selected>示例脚本</option>
+                  </select>
+                  <button id="turing-script-add" style="padding:4px 8px;background:var(--bg-hover);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:10px;cursor:pointer;">+新增</button>
+                  <button id="turing-script-rename" style="padding:4px 8px;background:var(--bg-hover);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:10px;cursor:pointer;">✏改名</button>
+                  <button id="turing-script-del" style="padding:4px 8px;background:rgba(255,80,80,0.1);border:1px solid rgba(255,80,80,0.3);border-radius:4px;color:#f55;font-size:10px;cursor:pointer;">x</button>
+                </div>
+                <textarea id="turing-script-editor" class="code" style="width:100%;height:160px;background:rgba(0,0,0,0.35);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:11px;padding:6px 8px;resize:vertical;outline:none;font-family:Consolas,'Courier New',monospace;" placeholder="// 编写 JavaScript 脚本...">// 自定义 JavaScript 脚本
+// 生命周期钩子：
+//   onMessage(msg) —— 每收到一条对手消息时触发
+//   onTick() —— 每 300ms 触发一次
+// 可用辅助对象 TUI：
+//   TUI.log(msg)   写日志
+//   TUI.getState() 获取当前状态
+
+function onMessage(msg) {
+  TUI.log("收到消息: " + msg);
+}
+
+function onTick() {
+  // 每 300ms 执行一次
+}</textarea>
+                <div style="display:flex;gap:6px;margin-top:8px;">
+                  <button id="turing-script-save" style="flex:1;padding:6px;background:var(--accent);border:none;border-radius:4px;color:#fff;font-size:11px;cursor:pointer;">💾 保存脚本</button>
+                  <button id="turing-script-load" style="flex:1;padding:6px;background:rgba(74,222,128,0.2);border:1px solid rgba(74,222,128,0.5);border-radius:4px;color:#4ade80;font-size:11px;cursor:pointer;">▶ 加载脚本</button>
+                  <button id="turing-script-unload" style="flex:1;padding:6px;background:rgba(255,80,80,0.15);border:1px solid rgba(255,80,80,0.3);border-radius:4px;color:#f55;font-size:11px;cursor:pointer;display:none;">⏹ 卸载脚本</button>
+                </div>
+                <div style="display:flex;gap:6px;margin-top:6px;">
+                  <button id="turing-script-export" style="flex:1;padding:6px;background:var(--bg-hover);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:11px;cursor:pointer;">📥 导出.js</button>
+                  <button id="turing-script-import" style="flex:1;padding:6px;background:var(--bg-hover);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:11px;cursor:pointer;">📤 导入.js</button>
+                </div>
+                <input type="file" id="turing-script-file-input" accept=".js,.txt" style="display:none;">
+              </div>
+            </div>
+
+            <!-- Tab: 日志 -->
+            <div class="tab-content" id="tab-logs">
+              <!-- 最近消息 -->
+              <div class="section">
+                <div class="section-title">最近消息</div>
+                <div class="msg-row">
+                  <span class="label">对手</span>
+                  <span class="content" id="turing-opponent">-</span>
+                </div>
+                <div class="msg-row">
+                  <span class="label">回复</span>
+                  <span class="content" id="turing-reply">-</span>
+                </div>
+              </div>
+
+              <!-- 对话记录 -->
+              <div class="section">
+                <div class="section-title">对话记录</div>
+                <div class="chatlog-list" id="turing-chatlog"></div>
+              </div>
+
+              <!-- 运行日志 -->
+              <div class="section">
+                <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;">
+                  <span>运行日志</span>
+                  <button class="icon-btn" id="turing-download-logs" title="下载日志" style="font-size:11px;">📥 下载</button>
+                </div>
+                <div class="logs" id="turing-logs"></div>
+              </div>
+            </div>
+
+            <!-- Tab: 统计 -->
+            <div class="tab-content" id="tab-stats">
+              <!-- 对手分析 -->
+              <div class="section">
+                <div class="section-title">对手分析</div>
+                <div class="analyze-bar">
+                  <div class="bar-human" id="turing-analyze-human-bar" style="width:0%"></div>
+                  <div class="bar-ai" id="turing-analyze-ai-bar" style="width:0%"></div>
+                </div>
+                <div class="analyze-counts">
+                  <span>真人 <span class="h-count" id="turing-analyze-human">0</span></span>
+                  <span>AI <span class="a-count" id="turing-analyze-ai">0</span></span>
+                </div>
+                <div class="analyze-final" id="turing-analyze-final">分析中…</div>
+                <div class="analyze-final" id="turing-ai-samples" style="border-top:none;padding-top:0;margin-top:0;color:var(--accent);">🧠 AI样本 12 | 真人样本 4</div>
+              </div>
+
+              <!-- 统计 -->
+              <div class="section">
+                <div class="section-title">战绩统计</div>
+                <div class="stats-row">
+                  <span class="stat-item">已回复 <span class="num" id="turing-count">0</span></span>
+                  <span class="stat-item">总消息 <span class="num" id="turing-total">0</span></span>
+                  <span class="judge-time" id="turing-judge-time">等待开局</span>
+                </div>
+                <div class="stats-row" style="margin-top:4px;">
+                  <span class="stat-item">战绩 <span class="num" id="turing-record">25局</span></span>
+                  <span class="stat-item" style="margin-left:auto;">胜率 <span class="num" id="turing-winrate" style="color:#4ade80">75%</span></span>
+                  <button class="icon-btn" id="turing-export-record" title="导出战绩" style="margin-left:4px;">📊</button>
+                  <button class="icon-btn" id="turing-reset-record" title="重置战绩" style="margin-left:2px;">🗑</button>
+                </div>
+                <div class="stats-row" style="margin-top:2px;font-size:10px;color:var(--text-muted);">
+                  <span style="color:#facc15;">🌟大获全胜 <span class="num" id="turing-cv">1</span></span>
+                  <span style="color:#4ade80;">✅胜利 <span class="num" id="turing-vi">8</span></span>
+                  <span style="color:#f87171;">❌输 <span class="num" id="turing-de">2</span></span>
+                  <span style="color:#880000;">💀彻头彻尾的输 <span class="num" id="turing-cd">1</span></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab: 设置 -->
+            <div class="tab-content" id="tab-settings">
+              <div class="aim-cols">
+                <div class="aim-col">
+              <div class="section">
+                <div class="section-title">辅助缩放</div>
+                <div class="zoom-row" style="flex-wrap:wrap;gap:4px;">
+                  <button class="zoom-btn " data-zoom="50">50%</button>
+                  <button class="zoom-btn " data-zoom="75">75%</button>
+                  <button class="zoom-btn active" data-zoom="100">100%</button>
+                  <button class="zoom-btn " data-zoom="125">125%</button>
+                  <button class="zoom-btn " data-zoom="150">150%</button>
+                  <button class="zoom-btn " data-zoom="200">200%</button>
+                </div>
+              </div>
+              <div class="section">
+                <div class="section-title">主题模式</div>
+                <div class="tog-row" style="align-items:center;gap:8px;">
+                  <span class="tog-label">🌙 深色</span>
+                  <div class="switch on" id="turing-theme-toggle"></div>
+                  <span class="tog-hint" id="turing-theme-hint">深色模式</span>
+                </div>
+              </div>
+              <div class="section">
+                <div class="section-title">辅助颜色</div>
+                <div class="tog-row" style="align-items:center;gap:8px;">
+                  <div id="turing-color-preview" style="width:28px;height:28px;border-radius:50%;background:hsl(270,70%,65%);border:2px solid var(--border);box-shadow:0 0 10px hsla(270,70%,65%,0.4);flex-shrink:0;cursor:pointer;" title="点击打开色盘"></div>
+                  <span style="font-size:10px;color:var(--text-muted);">hsl(<span id="turing-hue-value">270</span>°, 70%, 65%)</span>
+                  <button id="turing-color-picker-btn" style="font-size:10px;padding:3px 10px;background:var(--accent);border:none;border-radius:4px;color:#fff;cursor:pointer;">🎨 选择颜色</button>
+                </div>
+                <!-- 色盘弹窗 -->
+                <div id="turing-color-popup" style="display:none;position:absolute;z-index:10000001;background:var(--bg-primary);border:1px solid var(--border);border-radius:8px;padding:12px;box-shadow:0 0 30px rgba(0,0,0,0.8);flex-direction:column;gap:8px;width:220px;">
+                  <div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;">选择主题色 (Hue)</div>
+                  <input type="range" id="turing-hue-slider" min="0" max="360" value="270" style="width:100%;accent-color:hsl(270,70%,65%);cursor:pointer;">
+                  <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                    <span class="color-chip" data-hue="0" style="background:hsl(0,70%,55%);" title="红"></span>
+                    <span class="color-chip" data-hue="15" style="background:hsl(15,70%,55%);" title="橙红"></span>
+                    <span class="color-chip" data-hue="30" style="background:hsl(30,80%,55%);" title="橙"></span>
+                    <span class="color-chip" data-hue="45" style="background:hsl(45,80%,50%);" title="金"></span>
+                    <span class="color-chip" data-hue="60" style="background:hsl(60,70%,50%);" title="黄"></span>
+                    <span class="color-chip" data-hue="90" style="background:hsl(90,60%,50%);" title="黄绿"></span>
+                    <span class="color-chip" data-hue="140" style="background:hsl(140,60%,50%);" title="绿"></span>
+                    <span class="color-chip" data-hue="170" style="background:hsl(170,60%,50%);" title="青"></span>
+                    <span class="color-chip" data-hue="200" style="background:hsl(200,70%,55%);" title="蓝"></span>
+                    <span class="color-chip" data-hue="230" style="background:hsl(230,70%,60%);" title="深蓝"></span>
+                    <span class="color-chip" data-hue="270" style="background:hsl(270,70%,65%);" title="紫"></span>
+                    <span class="color-chip" data-hue="290" style="background:hsl(290,65%,60%);" title="洋红"></span>
+                    <span class="color-chip" data-hue="320" style="background:hsl(320,65%,60%);" title="粉"></span>
+                    <span class="color-chip" data-hue="340" style="background:hsl(340,65%,60%);" title="玫红"></span>
+                  </div>
+                  <div style="display:flex;gap:4px;margin-top:4px;">
+                    <input type="number" id="turing-hue-input" min="0" max="360" value="270" style="flex:1;background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:10px;padding:3px 6px;width:50px;">
+                    <button id="turing-color-apply" style="font-size:10px;padding:3px 10px;background:var(--accent);border:none;border-radius:4px;color:#fff;cursor:pointer;">应用</button>
+                  </div>
+                </div>
+              </div>
+                </div>
+                <div class="aim-col">
+              <div class="section">
+                <div class="section-title">菜单快捷键</div>
+                <div class="tog-row">
+                  <span class="tog-label">按键</span>
+                  <span class="tog-hint" style="font-size:9px;color:var(--text-muted);">点击输入框后按下目标键</span>
+                  <input type="text" id="turing-hotkey-input" value="Insert" placeholder="按任意键" style="width:80px;text-align:center;font-size:11px;cursor:pointer;" readonly>
+                </div>
+              </div>
+              <div class="section">
+                <div class="section-title">用户头像</div>
+                <div class="tog-row" style="flex-wrap:wrap;gap:6px;">
+                  <span class="tog-label">链接</span>
+                  <input type="text" id="turing-avatar-input" value="苦力怕.KULIPA头像【圆形】.png" placeholder="输入图片链接" style="flex:1;font-size:10px;">
+                </div>
+                <div class="tog-row" style="flex-wrap:wrap;gap:6px;margin-top:4px;">
+                  <span class="tog-label">本地</span>
+                  <input type="file" id="turing-avatar-file" accept="image/*" style="flex:1;font-size:10px;display:none;">
+                  <button id="turing-avatar-local-btn" style="font-size:10px;padding:2px 8px;background:var(--accent-soft);border:1px solid var(--accent-dark);border-radius:3px;color:var(--accent);cursor:pointer;">📂 选择本地图片</button>
+                  <button id="turing-avatar-clear" style="font-size:10px;padding:2px 8px;background:rgba(255,80,80,0.1);border:1px solid rgba(255,80,80,0.3);border-radius:3px;color:#f55;cursor:pointer;">清除</button>
+                </div>
+              </div>
+              <div class="section">
+                <div class="section-title">用户名称</div>
+                <div class="tog-row" style="flex-wrap:wrap;gap:6px;">
+                  <span class="tog-label">名称</span>
+                  <input type="text" id="turing-name-input" value="苦力怕.KULIPA" placeholder="输入名称" style="flex:1;font-size:100%;">
+                  <button id="turing-name-save" style="font-size:10px;padding:2px 8px;background:var(--accent);border:none;border-radius:3px;color:#fff;cursor:pointer;">保存</button>
+                </div>
+              </div>
+              <div class="section">
+                <div class="section-title">检查更新</div>
+                <div class="tog-row" style="align-items:center;justify-content:space-between;">
+                  <span class="tog-label" id="turing-update-status" style="font-size:10px;color:var(--text-muted);">检测中...</span>
+                  <button id="turing-check-update" style="font-size:10px;padding:3px 10px;background:var(--accent);border:none;border-radius:4px;color:#fff;cursor:pointer;">🔄 检查更新</button>
+                </div>
+              </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab: 网站 -->
+            <div class="tab-content" id="tab-sites">
+              <div class="section">
+                <div class="section-title">图灵测试网站入口</div>
+                <div class="tog-row" style="font-size:10px;color:var(--text-muted);margin-bottom:8px;">当前网站：game.xfcode.top</div>
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                  <a href="https://game.xfcode.top/" target="_blank" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:6px;text-decoration:none;color:var(--text);transition:border-color 0.2s;border-color:var(--accent);background:var(--accent-soft);">
+                    <span style="font-size:20px;">🎮</span>
+                    <div style="flex:1;">
+                      <div style="font-size:12px;font-weight:bold;color:var(--accent);">更好的图灵测试</div>
+                      <div style="font-size:10px;color:var(--text-muted);">game.xfcode.top · 当前</div>
+                    </div>
+                    <span style="font-size:14px;color:var(--text-muted);">↗</span>
+                  </a>
+                  <a href="https://www.anyanygame.com/turing-test" target="_blank" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:6px;text-decoration:none;color:var(--text);transition:border-color 0.2s;">
+                    <span style="font-size:20px;">🚪</span>
+                    <div style="flex:1;">
+                      <div style="font-size:12px;font-weight:bold;color:var(--accent);">任意门 · 图灵测试</div>
+                      <div style="font-size:10px;color:var(--text-muted);">www.anyanygame.com </div>
+                    </div>
+                    <span style="font-size:14px;color:var(--text-muted);">↗</span>
+                  </a>
+                </div>
+              </div>
+              <div class="section">
+                <div class="section-title">说明</div>
+                <div style="font-size:10px;color:var(--text-muted);line-height:1.6;">
+                  · 辅助已适配两个图灵测试网站，点击上方链接可切换<br>
+                  · 两个网站的游戏规则相同，但页面结构不同<br>
+                  · 当前网站会自动识别，无需手动切换配置
+                </div>
+              </div>
+            </div>
+          <div class="tui-note">⚠ 本面板为网页内的静态演示，与脚本「图灵AI 控制台」界面 1:1 复刻；所有开关、滑块与输入框仅对应样式，不会执行任何真实功能，也不会请求任何 API。</div>
+</div>
+        </div>
+      </div>
+</div>
+
+<section id="install">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-tag">INSTALL</span>
+      <h2>三步安装</h2>
+      <p>仅适配 Windows 10 / 11 电脑端浏览器，zip 自带 OpenSERP 后端搜索服务（可选）</p>
+    </div>
+    <div class="install" id="install-cards"></div>
+    <div style="text-align:center;margin-top:44px">
+      <a class="btn btn-primary" href="#download"><span class="ic">⬇</span>前往下载专区选版本</a>
+      <a class="btn btn-ghost" href="https://github.com/KLP-KULIPA-24/Turing-AI-Tools" target="_blank" style="margin-left:10px;"><span class="ic">📦</span>开源仓库</a>
+      <p style="margin-top:14px;font-size:12.5px;color:#8a94c6">不同平台 / 架构的压缩包在 <a href="#download" style="color:#a5b4fc">下载专区</a> 分区列出，请认准你的 CPU 架构（amd64 / arm64 / 386）再下载。</p>
+    </div>
+  </div>
+</section>
+
+<section id="faq" style="background:rgba(255,255,255,.012);border-top:1px solid var(--border)">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-tag">FAQ</span>
+      <h2>常见问题</h2>
+    </div>
+    <div class="faq">
+      <details class="q"><summary>脚本如何工作？</summary><div class="a">通过内置油猴引擎监听网页对话流，一处接入大模型 API，自动生成伪装回复并实时分析对手，判定真人/ AI 后自动点击结算按钮。</div></details>
+      <details class="q"><summary>支持哪些设备？</summary><div class="a">目前仅适配电脑端客户端：Windows 10 / Windows 11 系统上的 Chrome / Edge / Firefox 浏览器（安装 Tampermonkey「篡改猴」或 Violentmonkey「暴力猴」扩展即可）。手机、平板、Mac、Linux 暂不支持，OpenSERP 搜索后端也是 Windows 的可执行程序。</div></details>
+      <details class="q"><summary>支持哪些浏览器和网站？</summary><div class="a">Chrome / Edge / Firefox 等主流浏览器，安装 Tampermonkey（篡改猴）或 Violentmonkey（暴力猴）任一款扩展即可。支持「任意门 · 图灵测试」（anyanygame.com）和「更好的图灵测试」（xfcode.top）两个网站。</div></details>
+      <details class="q"><summary>如何开启联网搜索？</summary><div class="a">zip 内自带后端搜索服务：解压后双击运行「启动联网搜索后端服务器.py」（需装 Python 3），会自动在 127.0.0.1:7070 启动 OpenSERP 服务；然后在脚本参数里打开「联网搜索」即可，无需额外配置。</div></details>
+      <details class="q"><summary>需要服务器或数据库吗？</summary><div class="a">断言与自动回复逻辑全部在浏览器本地执行，战绩与配置仅保存在你自己的浏览器存储中；联网搜索功能默认关闭，如开启需配合 zip 内附带的 OpenSERP 后端服务（双击「启动联网搜索后端服务器.py」即可启动）。API Key 只保存在你的浏览器里。</div></details>
+      <details class="q"><summary>首次使用如何配置？</summary><div class="a">安装后打开图灵测试页面，按 <b>Insert</b> 键展开控制台（或点击右下角浮动按钮「TUI」），切换到 API配置 页填写一个 OpenAI 兼容接口地址和 Key（默认 https://api.agnes-ai.cn/v1），回主面板打开「自动回复」即可。</div></details>
+      <details class="q"><summary>会一局结束后自动再来一局吗？</summary><div class="a">会。开启全自动匹配后，无论获胜 / 失败 / 平局，结算页出现"再来一局"按钮都会自动点击，无限连战。</div></details>
+    </div>
+  </div>
+</section>
+
+<section class="cta-sec">
+  <div class="wrap">
+    <div class="cta-banner">
+      <h2>现在就装上，开始你的图灵测试自动之旅</h2>
+      <p>下载即用，无需注册。V1.5 免费开放。</p>
+      <a class="btn btn-primary" href="#download"><span class="ic">⬇</span>前往下载专区</a>
+      <a class="btn btn-ghost" href="https://github.com/KLP-KULIPA-24/Turing-AI-Tools" target="_blank" style="margin-left:10px;"><span class="ic">📦</span>开源仓库</a>
+      <p style="margin-top:14px;font-size:12.5px;color:#8a94c6">V1.5 支持 Windows amd64 / arm64 / 386 · 本项目开源在 <a href="https://github.com/KLP-KULIPA-24/Turing-AI-Tools" target="_blank" style="color:#a5b4fc">github.com/KLP-KULIPA-24/Turing-AI-Tools</a></p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div style="font-size:15px;color:#c7d2fe;font-weight:600">图灵AI辅助 · V1.5</div>
+    <div class="legal">
+      免责声明：本工具仅用于学习 JavaScript 与浏览自动化技术交流，请勿将本工具用于任何违反平台规则或国家法律法规的场景，由此产生的一切后果由使用者自行承担。请在合法合规的范围内使用。
+    </div>
+  </div>
+</footer>
+
+<script>
+// ================= 界面预览：1:1 复刻控制台（功能无效，仅样式交互） =================
+(function () {
+  const panel = document.getElementById('turing-auto-panel');
+  let panelZoom = 1;
+  const kbdHint = document.getElementById('kbd-hint');
+  const ball = document.getElementById('tui-ball');
+  // 手机端判定：优先按设备能力（触屏 + 无悬停指针），避免仅凭窗口宽度误判
+  const isMobileDevice = (window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches)
+    || ('ontouchstart' in window && (!window.matchMedia || !window.matchMedia('(hover: hover)').matches))
+    || /Android|iPhone|iPad|iPod|Windows Phone|Mobile/i.test(navigator.userAgent || '');
+  const isMobile = isMobileDevice || (ball && window.matchMedia && window.matchMedia('(max-width:600px)').matches && window.innerWidth < 601 && (navigator.maxTouchPoints > 0));
+  if (isMobile) document.body.classList.add('is-mobile');
+
+  // 入场动画：splash 覆盖页面，2.6s 后自动淡出消失
+  const splash = document.getElementById('turing-splash');
+  if (splash) {
+    setTimeout(function () { splash.remove(); }, 2600);
+  }
+
+  if (!panel) return;
+
+  // 开关面板（手机：悬浮球；电脑：Insert 键 / 提示条）
+  // 打开时把面板挪到预览窗口上方，避免盖住中间的对话框（手动拖动过则不再自动定位）
+  function positionPanel() {
+    if (panel._dragged) return;
+    const stage = document.getElementById('demo-stage');
+    if (!stage) return;
+    const r = stage.getBoundingClientRect();
+    if (!r.width) return;
+    const w = Math.min(900, r.width - 24);
+    // display:none 时 offsetHeight=0,改用 getBoundingClientRect 取上次渲染高度
+    const hr = panel.getBoundingClientRect();
+    const h = hr.height || 580;
+    let left = r.left + (r.width - w) / 2;
+    let top = r.top + 14;
+    left = Math.max(8, Math.min(left, window.innerWidth - w - 8));
+    top = Math.max(8, Math.min(top, window.innerHeight - h - 8));
+    panel.style.transform = 'none';
+    panel.style.left = left + 'px';
+    panel.style.top = top + 'px';
+  }
+  function togglePanel(open) {
+    const on = typeof open === 'boolean' ? open : !panel.classList.contains('visible');
+    panel.classList.toggle('visible', on);
+    if (ball) ball.textContent = on ? '✕' : 'TUI';
+    if (on) positionPanel();
+  }
+  function openPanel() { togglePanel(true); }
+
+  if (kbdHint) kbdHint.addEventListener('click', togglePanel);
+  if (ball) ball.addEventListener('click', togglePanel);
+
+  // 电脑端：Insert 键开关
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Insert' || e.keyCode === 45) { e.preventDefault(); togglePanel(); }
+  });
+
+  // 手机端：悬浮球可拖动（click 与拖动区分）
+  let drag = false, moved = false, sx = 0, sy = 0, bx = 0, by = 0;
+  const onMove = function (e) {
+    if (!drag) return;
+    const t = e.touches ? e.touches[0] : e;
+    const dx = t.clientX - sx, dy = t.clientY - sy;
+    if (Math.abs(dx) + Math.abs(dy) > 6) moved = true;
+    if (ball) {
+      ball.style.right = 'auto';
+      ball.style.bottom = 'auto';
+      ball.style.left = Math.max(0, Math.min(window.innerWidth - ball.offsetWidth, bx + dx)) + 'px';
+      ball.style.top = Math.max(0, Math.min(window.innerHeight - ball.offsetHeight, by + dy)) + 'px';
+    }
+  };
+  const onDown = function (e) {
+    const t = e.touches ? e.touches[0] : e;
+    drag = true; moved = false;
+    sx = t.clientX; sy = t.clientY;
+    bx = ball.offsetLeft; by = ball.offsetTop;
+    if (ball) ball.classList.add('dragging');
+  };
+  const onUp = function () {
+    drag = false;
+    if (ball) ball.classList.remove('dragging');
+  };
+  if (ball) {
+    ball.addEventListener('mousedown', onDown);
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+    ball.addEventListener('touchstart', onDown, { passive: true });
+    document.addEventListener('touchmove', onMove, { passive: true });
+    document.addEventListener('touchend', onUp, { passive: true });
+    ball.addEventListener('click', function (e) { if (moved) e.stopPropagation(); });
+  }
+
+  // 桌面端：按住导航栏品牌区域可拖动整个面板（与脚本面板行为一致）
+  (function () {
+    const brand = panel.querySelector('.nav-brand');
+    if (!brand || !window.matchMedia('(min-width:601px)').matches) return;
+    let d = false, dx = 0, dy = 0;
+    brand.addEventListener('mousedown', function (e) {
+      // 面板默认是 top:50%+translate(-50%,-50%) 居中；先取当前实际位置，
+      // 再解除 transform 改为手动定位，避免瞬移到文档流起点导致“菜单消失”
+      // zoom 后 getBoundingClientRect 返回的是视觉坐标，需除以缩放系数还原布局坐标
+      const r0 = panel.getBoundingClientRect();
+      panel._dragged = true;
+      panel.style.transform = 'none';
+      panel.style.top = (r0.top / panelZoom) + 'px';
+      panel.style.left = (r0.left / panelZoom) + 'px';
+      d = true; dx = e.clientX; dy = e.clientY;
+      e.preventDefault();
+    });
+    document.addEventListener('mousemove', function (e) {
+      if (!d) return;
+      const w = Math.min(900, panel.offsetWidth || 900);
+      const h = Math.min(580, panel.offsetHeight || 580);
+      let nx = (parseFloat(panel.style.left) + (e.clientX - dx) / panelZoom);
+      let ny = (parseFloat(panel.style.top) + (e.clientY - dy) / panelZoom);
+      nx = Math.max(8, Math.min(nx, window.innerWidth - w - 8));
+      ny = Math.max(8, Math.min(ny, window.innerHeight - h - 8));
+      panel.style.left = nx + 'px';
+      panel.style.top = ny + 'px';
+      dx = e.clientX; dy = e.clientY;
+    });
+    document.addEventListener('mouseup', function () { d = false; });
+  })();
+
+  // 左侧导航切换
+  const navItems = panel.querySelectorAll('.nav-item[data-tab]');
+  navItems.forEach(function (item) {
+    item.addEventListener('click', function () {
+      navItems.forEach(function (n) { n.classList.remove('active'); });
+      item.classList.add('active');
+      panel.querySelectorAll('.tab-content').forEach(function (t) { t.classList.remove('active'); });
+      const target = document.getElementById('tab-' + item.getAttribute('data-tab'));
+      if (target) target.classList.add('active');
+      else panel.querySelector('.tab-content').classList.add('active');
+    });
+  });
+
+  // 开关切换样式（主题切换开关单独处理）
+  panel.querySelectorAll('.switch, .mode-btn, .zoom-btn').forEach(function (el) {
+    el.addEventListener('click', function () {
+      if (el.id === 'turing-theme-toggle') return;
+      if (el.classList.contains('mode-btn') || el.classList.contains('zoom-btn')) {
+        // 单选
+        const grp = el.parentElement;
+        grp.querySelectorAll('.mode-btn, .zoom-btn').forEach(function (x) { x.classList.remove('active'); });
+        el.classList.add('active');
+        // 模式切换 → 同步右上角徽章
+        if (el.classList.contains('mode-btn')) {
+          const badge = document.getElementById('turing-mode-badge');
+          if (badge) badge.textContent = (el.textContent || '').trim();
+        }
+      } else {
+        el.classList.toggle('on');
+        const on = el.classList.contains('on');
+        // 自动回复 — 由 initSim 独立处理，此处只更新 hint
+        if (el.id === 'turing-toggle') {
+          const hint = document.getElementById('turing-toggle-hint');
+          if (hint) hint.textContent = on ? '已开启' : '已关闭';
+        }
+        // 全自动匹配
+        if (el.id === 'turing-auto-match') {
+          const hint = document.getElementById('turing-auto-match-hint');
+          if (hint) hint.style.display = on ? '' : 'none';
+          autoMatchEnabled = on;
+          showToast(on ? '▶ 全自动匹配已开启' : '⏹ 全自动匹配已关闭');
+          // 如果开启且当前在主页，自动开始匹配
+          if (on && window.demoCurrentPhase === 'landing') {
+            setTimeout(function() {
+              if (typeof window.demoStartMatch === 'function') {
+                window.demoStartMatch();
+              }
+            }, 500);
+          }
+        }
+        // 思考链
+        if (el.id === 'turing-thinking') {
+          const hint = document.getElementById('turing-thinking-hint');
+          if (hint) hint.style.display = on ? '' : 'none';
+          showToast(on ? '▶ 思考链已开启 — 推理过程也发送' : '⏹ 思考链已关闭');
+        }
+        // 网页搜索
+        if (el.id === 'turing-search') {
+          const hint = document.getElementById('turing-search-hint');
+          if (hint) hint.textContent = on ? 'AI可上网查资料' : '搜索已关闭';
+          const bar = panel.querySelector('#tab-aim .search-service-bar');
+          if (bar) {
+            bar.className = 'search-service-bar ' + (on ? 'online' : 'offline');
+            const sp = bar.querySelector('span:last-child');
+            if (sp) sp.textContent = on ? '搜索服务在线' : '搜索服务离线 - 请启动OpenSERP';
+          }
+          // search-status 图标同步
+          const ss = panel.querySelector('.search-status');
+          if (ss) {
+            ss.className = 'search-status ' + (on ? 'active' : 'inactive');
+            ss.title = on ? '搜索服务运行中' : '搜索服务未运行，请启动OpenSERP';
+            ss.textContent = on ? '●' : '○';
+          }
+          showToast(on ? '🔍 联网搜索已开启' : '🌐 联网搜索已关闭');
+        }
+        // 自动注册新号
+        if (el.id === 'turing-auto-register') {
+          const hint = document.getElementById('turing-auto-register-hint');
+          if (hint) hint.style.display = on ? '' : 'none';
+          showToast(on ? '▶ 自动注册新号已开启 — 验证手机号时自动切号' : '⏹ 自动注册新号已关闭');
+        }
+      }
+    });
+  });
+
+  // ===== 设置页模拟：辅助缩放 / 主题模式 / 辅助颜色（与脚本逻辑一致，纯前端生效） =====
+  const hueSpan = document.getElementById('turing-hue-value');
+  const hueSlider = document.getElementById('turing-hue-slider');
+  const hueInput = document.getElementById('turing-hue-input');
+  const colorPreview = document.getElementById('turing-color-preview');
+  const colorPopup = document.getElementById('turing-color-popup');
+  const colorPickerBtn = document.getElementById('turing-color-picker-btn');
+  const colorApplyBtn = document.getElementById('turing-color-apply');
+  const themeToggle = document.getElementById('turing-theme-toggle');
+  const themeHint = document.getElementById('turing-theme-hint');
+  const themeLabel = panel.querySelector('.tog-label');
+  let hue = 270, darkMode = true;
+
+  // 辅助缩放：与脚本 applyZoom 一致
+  const applyZoom = function (level) {
+    panelZoom = level / 100;
+    panel.style.zoom = panelZoom.toFixed(2);
+    // 清除拖拽时的 inline 定位，恢复 CSS 居中
+    panel.style.transform = '';
+    panel.style.left = '';
+    panel.style.top = '';
+    panel.querySelectorAll('.zoom-btn').forEach(function (b) {
+      b.classList.toggle('active', parseInt(b.getAttribute('data-zoom'), 10) === level);
+    });
+  };
+  panel.querySelectorAll('.zoom-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () { applyZoom(parseInt(this.getAttribute('data-zoom'), 10)); });
+  });
+
+  // 辅助颜色：与脚本 applyTheme 一致
+  const applyTheme = function (h) {
+    hue = h;
+    // 同步到根元素，保证 Toast / 色盘弹窗等 body 级弹窗跟随主题色
+    const root = document.documentElement;
+    root.style.setProperty('--accent', 'hsl(' + h + ', 70%, 65%)');
+    root.style.setProperty('--accent-glow', 'hsla(' + h + ', 70%, 65%, 0.35)');
+    root.style.setProperty('--accent-soft', 'hsla(' + h + ', 70%, 65%, 0.12)');
+    root.style.setProperty('--accent-dark', 'hsl(' + h + ', 60%, 45%)');
+    panel.style.setProperty('--accent', 'hsl(' + h + ', 70%, 65%)');
+    panel.style.setProperty('--accent-glow', 'hsla(' + h + ', 70%, 65%, 0.35)');
+    panel.style.setProperty('--accent-soft', 'hsla(' + h + ', 70%, 65%, 0.12)');
+    panel.style.setProperty('--accent-dark', 'hsl(' + h + ', 60%, 45%)');
+    if (colorPreview) {
+      colorPreview.style.background = 'hsl(' + h + ', 70%, 65%)';
+      colorPreview.style.boxShadow = '0 0 10px hsla(' + h + ', 70%, 65%, 0.4)';
+    }
+    if (hueSpan) hueSpan.textContent = h;
+    if (hueSlider) { hueSlider.value = h; hueSlider.style.accentColor = 'hsl(' + h + ', 70%, 65%)'; }
+    if (hueInput) hueInput.value = h;
+    panel.querySelectorAll('.color-chip').forEach(function (c) {
+      c.classList.toggle('active', parseInt(c.getAttribute('data-hue'), 10) === h);
+    });
+  };
+  // 主题模式：与脚本 applyThemeMode 一致
+  const applyThemeMode = function (isDark) {
+    darkMode = isDark;
+    const vars = isDark
+      ? ['#0d0d11', '#12121a', '#1a1a26', '#222233', '#2a2a3a', '#333348', '#e0e0e8', '#a0a0b8', '#6a6a80', 'rgba(255,255,255,0.16)', 'rgba(255,255,255,0.30)', 'rgba(255,255,255,0.06)', 'rgba(255,255,255,0.12)', 'rgba(255,255,255,0.12)']
+      : ['#f5f5f8', '#ebebf0', '#e0e0e8', '#d4d4dd', '#c8c8d0', '#b8b8c2', '#1a1a26', '#555568', '#8a8a96', 'rgba(0,0,0,0.45)', 'rgba(0,0,0,0.60)', 'rgba(255,255,255,0.85)', 'rgba(0,0,0,0.35)', 'rgba(0,0,0,0.4)'];
+    const names = ['--bg-primary', '--bg-secondary', '--bg-tertiary', '--bg-hover', '--border', '--border-light', '--text', '--text-dim', '--text-muted', '--sb-thumb', '--sb-thumb-hover', '--input-bg', '--switch-track', '--slider-track'];
+    names.forEach(function (n, i) { panel.style.setProperty(n, vars[i]); });
+    panel.style.boxShadow = isDark
+      ? '0 0 60px rgba(124,58,237,0.15), 0 0 120px rgba(0,0,0,0.7), 0 8px 32px rgba(0,0,0,0.6)'
+      : '0 0 60px rgba(124,58,237,0.08), 0 0 120px rgba(0,0,0,0.15), 0 8px 32px rgba(0,0,0,0.1)';
+    if (themeToggle) themeToggle.className = 'switch ' + (isDark ? 'on' : '');
+    if (themeHint) themeHint.textContent = isDark ? '深色模式' : '浅色模式';
+  };
+  if (themeToggle) themeToggle.addEventListener('click', function () { applyThemeMode(!darkMode); });
+  // 色盘弹窗开合（相对面板定位）
+  const toggleColorPopup = function () {
+    if (!colorPopup) return;
+    if (colorPopup.style.display === 'flex') { colorPopup.style.display = 'none'; return; }
+    const panelRect = panel.getBoundingClientRect();
+    const btnRect = (colorPickerBtn || colorPreview).getBoundingClientRect();
+    let relLeft = btnRect.left - panelRect.left;
+    let relTop = btnRect.bottom - panelRect.top + 6;
+    if (relLeft + 220 > panelRect.width) relLeft = panelRect.width - 220 - 8;
+    if (relLeft < 0) relLeft = 0;
+    if (relTop + 220 > panelRect.height) relTop = btnRect.top - panelRect.top - 220 - 6;
+    if (relTop < 0) relTop = 0;
+    // 防止超出 viewport
+    const absLeft = panelRect.left + relLeft;
+    const absTop = panelRect.top + relTop;
+    if (absLeft + 220 > window.innerWidth) relLeft -= (absLeft + 220 - window.innerWidth);
+    if (absTop + 220 > window.innerHeight) relTop -= (absTop + 220 - window.innerHeight);
+    if (relLeft < 0) relLeft = 0;
+    if (relTop < 0) relTop = 0;
+    colorPopup.style.left = relLeft + 'px';
+    colorPopup.style.top = relTop + 'px';
+    colorPopup.style.display = 'flex';
+  };
+  if (colorPickerBtn) colorPickerBtn.addEventListener('click', toggleColorPopup);
+  if (colorPreview) colorPreview.addEventListener('click', toggleColorPopup);
+  if (colorPopup) colorPopup.addEventListener('click', function (e) { e.stopPropagation(); });
+  // 滑块实时预览
+  if (hueSlider) hueSlider.addEventListener('input', function () {
+    const h = parseInt(this.value, 10);
+    if (hueSpan) hueSpan.textContent = h;
+    if (hueInput) hueInput.value = h;
+    if (colorPreview) {
+      colorPreview.style.background = 'hsl(' + h + ', 70%, 65%)';
+      colorPreview.style.boxShadow = '0 0 10px hsla(' + h + ', 70%, 65%, 0.4)';
+    }
+    this.style.accentColor = 'hsl(' + h + ', 70%, 65%)';
+  });
+  // 数字输入同步
+  if (hueInput) hueInput.addEventListener('input', function () {
+    let h = parseInt(this.value, 10);
+    if (isNaN(h) || h < 0) h = 0;
+    if (h > 360) h = 360;
+    if (hueSlider) hueSlider.value = h;
+    if (hueSpan) hueSpan.textContent = h;
+    if (colorPreview) {
+      colorPreview.style.background = 'hsl(' + h + ', 70%, 65%)';
+      colorPreview.style.boxShadow = '0 0 10px hsla(' + h + ', 70%, 65%, 0.4)';
+    }
+  });
+  // 应用按钮
+  if (colorApplyBtn) colorApplyBtn.addEventListener('click', function () {
+    applyTheme(parseInt((hueSlider || {}).value || hue, 10));
+    if (colorPopup) colorPopup.style.display = 'none';
+  });
+  // 色块点击
+  panel.querySelectorAll('.color-chip').forEach(function (chip) {
+    chip.addEventListener('click', function () {
+      applyTheme(parseInt(this.getAttribute('data-hue'), 10));
+      if (colorPopup) colorPopup.style.display = 'none';
+    });
+  });
+
+  // ===== API 配置 / 参数管理 / JavaScript 脚本等剩余交互模拟（纯前端演示） =====
+  // —— API 配置卡片 ——
+  const apiSettingsTitle = document.getElementById('turing-api-settings-title');
+  const apiSettingsBody = document.getElementById('turing-api-settings-body');
+  const apiGroupsEl = document.querySelector('#turing-api-settings-body .api-config-groups');
+  let apiGroups = [
+    { name: 'Agnes纯公益AI站', url: 'https://api.agnes-ai.cn/v1/chat/completions', model: 'agnes-2.5-flash', key: 'sk-ceshi' }
+  ];
+  let apiActive = 0;
+  const apiEscape = function (t) {
+    return String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  };
+  const apiRender = function () {
+    apiGroupsEl.innerHTML = apiGroups.map(function (g, i) {
+      const active = i === apiActive;
+      return '<div class="api-config-group" style="border:1px solid ' + (active ? 'var(--accent)' : 'var(--border)') + ';border-radius:6px;padding:8px;margin-bottom:8px;background:' + (active ? 'rgba(192,132,252,0.08)' : 'rgba(0,0,0,0.2)') + ';">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">' +
+        '<span style="font-size:11px;font-weight:bold;color:' + (active ? 'var(--accent)' : 'var(--text)') + ';">' + apiEscape(g.name) + '</span>' +
+        '<span style="display:flex;gap:4px;">' +
+        (active
+          ? '<span style="font-size:10px;color:var(--accent);padding:2px 6px;border-radius:3px;border:1px solid var(--accent);">当前</span>'
+          : '<button class="api-select-btn" data-index="' + i + '" style="font-size:10px;padding:2px 8px;border:1px solid var(--accent-dark);border-radius:3px;background:var(--accent-soft);color:var(--accent);cursor:pointer;">使用</button>') +
+        '<button class="api-del-btn" data-index="' + i + '" style="font-size:10px;padding:2px 6px;border:1px solid rgba(255,80,80,0.3);border-radius:3px;background:rgba(255,80,80,0.1);color:#f55;cursor:pointer;" title="删除"><b>x</b></button>' +
+        '</span></div>' +
+        '<div style="font-size:9px;color:#888;word-break:break-all;">' + apiEscape(g.url) + '</div>' +
+        '<div style="font-size:9px;color:#888;">模型: ' + apiEscape(g.model) + '</div></div>';
+    }).join('');
+    apiGroupsEl.querySelectorAll('.api-select-btn').forEach(function (b) {
+      b.addEventListener('click', function () {
+        apiActive = parseInt(this.getAttribute('data-index'), 10);
+        apiRender();
+        showToast('🤖 API 已切换为「' + apiGroups[apiActive].name + '」(演示)');
+      });
+    });
+    apiGroupsEl.querySelectorAll('.api-del-btn').forEach(function (b) {
+      b.addEventListener('click', function () {
+        const i = parseInt(this.getAttribute('data-index'), 10);
+        if (apiGroups.length <= 1) { showToast('⚠️ 至少保留一个配置'); return; }
+        apiGroups.splice(i, 1);
+        if (apiActive >= apiGroups.length) apiActive = apiGroups.length - 1;
+        apiRender();
+        showToast('🗑 已删除配置(演示)');
+      });
+    });
+  };
+  if (apiSettingsTitle && apiSettingsBody) {
+    apiSettingsTitle.addEventListener('click', function () {
+      const show = apiSettingsBody.style.display !== 'block';
+      apiSettingsBody.style.display = show ? 'block' : 'none';
+      const arrow = apiSettingsTitle.querySelector('span');
+      if (arrow) arrow.textContent = show ? '▲' : '▼';
+      if (show) apiRender();
+    });
+    // 初始状态：默认展开
+    if (apiSettingsBody.style.display === '' || apiSettingsBody.style.display === 'none') {
+      apiSettingsBody.style.display = 'block';
+      const arrow = apiSettingsTitle.querySelector('span');
+      if (arrow) arrow.textContent = '▲';
+    }
+  }
+  // 获取模型（演示：按所选提供商填充模型列表）
+  const fetchModelsBtn = document.getElementById('turing-fetch-models');
+  if (fetchModelsBtn) {
+    fetchModelsBtn.addEventListener('click', function () {
+      const provider = (document.getElementById('turing-provider-select') || {}).value || '';
+      const lists = {
+        'openai': ['gpt-4o-mini', 'gpt-4o', 'o3-mini'],
+        'deepseek': ['deepseek-reasoner'],
+        'moonshot': ['moonshot-v1-8k', 'kimi-k2'],
+        'anthropic': ['claude-haiku', 'claude-sonnet-4-5', 'claude-opus-5'],
+        'agnes': ['agnes-2.5-flash']
+      };
+      let list = ['agnes-2.5-flash'];
+      Object.keys(lists).forEach(function (k) {
+        if (provider.indexOf(k) !== -1) list = lists[k];
+      });
+      const wrap = document.getElementById('turing-model-select-wrap');
+      const sel = document.getElementById('turing-model-select');
+      const modelInput = document.getElementById('turing-model-name-input');
+      if (sel) {
+        sel.innerHTML = list.map(function (m, i) {
+          return '<option value="' + m + '"' + (i === 0 ? ' selected' : '') + '>' + m + '</option>';
+        }).join('');
+        sel.addEventListener('change', function () { if (modelInput) modelInput.value = this.value; });
+      }
+      if (wrap) wrap.hidden = false;
+      if (modelInput && !modelInput.value) modelInput.value = list[0];
+      showToast('🔃 已获取模型列表(演示)');
+    });
+  }
+  // 新增配置并「重连」
+  const apiSaveBtn = document.getElementById('turing-api-save');
+  if (apiSaveBtn) {
+    apiSaveBtn.addEventListener('click', function () {
+      const label = (document.getElementById('turing-api-label-input') || {}).value || '';
+      const url = (document.getElementById('turing-api-url-input') || {}).value || '';
+      const key = (document.getElementById('turing-api-key-input') || {}).value || '';
+      const model = (document.getElementById('turing-model-name-input') || {}).value || 'agnes-2.5-flash';
+      if (!label.trim() && !url.trim()) { showToast('⚠️ 请填写配置名称或 API 地址'); return; }
+      const newGroup = {
+        name: label.trim() || (url.trim().replace(/^https?:\/\//, '').split(/[\/\s]/)[0] || '新配置'),
+        url: url.trim() || '未填写',
+        model: model.trim() || 'agnes-2.5-flash'
+      };
+      apiGroups.push(newGroup);
+      if (key) newGroup.key = key;
+      apiActive = apiGroups.length - 1;
+      const body = document.getElementById('turing-api-settings-body');
+      if (body) body.style.display = 'block';
+      apiRender();
+      ['turing-api-label-input', 'turing-api-url-input', 'turing-api-key-input', 'turing-model-name-input'].forEach(function (id) {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+      const mwrap = document.getElementById('turing-model-select-wrap');
+      if (mwrap) mwrap.hidden = true;
+      showToast('💾 已添加配置并重连(演示)');
+    });
+  }
+
+  // —— 参数管理 ——
+  const cfgSelect = document.getElementById('turing-cfg-select');
+  const cfgEditor = document.getElementById('turing-cfg-editor');
+  const cfgDefaultJson = JSON.stringify({
+    apiUrl: 'https://api.agnes-ai.cn/v1/chat/completions',
+    apiKey: 'sk-XXXX',
+    modelName: 'agnes-2.5-flash',
+    temperature: 0.7,
+    chatMode: 'normal',
+    minDelay: 0,
+    maxDelay: 0,
+    searchEnabled: true,
+    adContent: '测试AI全自动脚本中（免费体验尝鲜版网址：klp-kulipa-24.github.io/Turing-AI-Tools）',
+    userScripts: []
+  }, null, 2);
+  const cfgBackupJson = JSON.stringify({
+    apiUrl: 'https://api.agnes-ai.cn/v1',
+    apiKey: 'sk-XXXX',
+    modelName: 'acuzc/deepseek-v4-flash',
+    temperature: 0.6,
+    chatMode: 'normal',
+    minDelay: 0,
+    maxDelay: 0,
+    searchEnabled: true,
+    adContent: '',
+    userScripts: []
+  }, null, 2);
+  let cfgGroups = [
+    { name: 'Agnes纯公益AI站', content: cfgDefaultJson }
+  ];
+  let cfgActive = 0;
+  const cfgRenderSelect = function () {
+    if (!cfgSelect) return;
+    cfgSelect.innerHTML = cfgGroups.map(function (g, i) {
+      return '<option value="' + i + '"' + (i === cfgActive ? ' selected' : '') + '>' + apiEscape(g.name) + '</option>';
+    }).join('');
+  };
+  if (cfgSelect) cfgSelect.addEventListener('change', function () {
+    cfgActive = parseInt(this.value, 10);
+    if (cfgEditor) cfgEditor.value = cfgGroups[cfgActive].content;
+  });
+  const cfgAddBtn = document.getElementById('turing-cfg-add');
+  if (cfgAddBtn) cfgAddBtn.addEventListener('click', function () {
+    cfgGroups.push({ name: '新参数组' + (cfgGroups.length + 1), content: cfgDefaultJson });
+    cfgActive = cfgGroups.length - 1;
+    cfgRenderSelect();
+    if (cfgEditor) cfgEditor.value = cfgGroups[cfgActive].content;
+    showToast('➕ 已新增参数组(演示)');
+  });
+  const cfgRenameBtn = document.getElementById('turing-cfg-rename');
+  if (cfgRenameBtn) cfgRenameBtn.addEventListener('click', function () {
+    const name = prompt('重命名参数组', cfgGroups[cfgActive].name);
+    if (name && name.trim()) {
+      cfgGroups[cfgActive].name = name.trim();
+      cfgRenderSelect();
+      showToast('✏ 已重命名为「' + name.trim() + '」');
+    }
+  });
+  const cfgDelBtn = document.getElementById('turing-cfg-del');
+  if (cfgDelBtn) cfgDelBtn.addEventListener('click', function () {
+    if (cfgGroups.length <= 1) { showToast('⚠️ 至少保留一组参数'); return; }
+    cfgGroups.splice(cfgActive, 1);
+    if (cfgActive >= cfgGroups.length) cfgActive = cfgGroups.length - 1;
+    cfgRenderSelect();
+    if (cfgEditor) cfgEditor.value = cfgGroups[cfgActive].content;
+    showToast('🗑 已删除参数组(演示)');
+  });
+  const cfgAutoload = document.getElementById('turing-cfg-autoload');
+  if (cfgAutoload) cfgAutoload.addEventListener('change', function () {
+    showToast(this.checked ? '✨ 待机自动加载已开启' : '✨ 待机自动加载已关闭');
+  });
+  const cfgSaveBtn = document.getElementById('turing-cfg-save');
+  if (cfgSaveBtn) cfgSaveBtn.addEventListener('click', function () {
+    const newContent = cfgEditor ? cfgEditor.value : '';
+    cfgGroups[cfgActive].content = newContent;
+    showToast('💾 参数已保存(演示)');
+  });
+  const cfgLoadBtn = document.getElementById('turing-cfg-load');
+  // 把参数 JSON 真实应用到面板：模型名/延迟滑块/聊天模式/API 地址
+  const syncDelayRange = function (id, numId, v) {
+    const r = document.getElementById(id);
+    const n = document.getElementById(numId);
+    if (r) r.value = v;
+    if (n) n.value = v;
+  };
+  const applyCfgToPanel = function (cfg) {
+    if (!cfg || typeof cfg !== 'object') return;
+    if (cfg.modelName) {
+      const me = document.getElementById('turing-model');
+      if (me) me.textContent = cfg.modelName;
+    }
+    if (typeof cfg.minDelay === 'number') {
+      syncDelayRange('turing-delay-min', 'turing-delay-min-num', Math.max(0, Math.min(10000, cfg.minDelay)));
+    }
+    if (typeof cfg.maxDelay === 'number') {
+      syncDelayRange('turing-delay-max', 'turing-delay-max-num', Math.max(0, Math.min(20000, cfg.maxDelay)));
+    }
+    if (cfg.chatMode) {
+      const mode = String(cfg.chatMode).toUpperCase();
+      let activeBtn = null;
+      panel.querySelectorAll('.mode-btn').forEach(function (b) {
+        const bm = String(b.getAttribute('data-mode') || '').toUpperCase();
+        const on = bm === mode || (mode === 'FAKE_AI' && bm === 'FAKE_AI');
+        b.classList.toggle('active', on);
+        if (on) activeBtn = b;
+      });
+      const badge = document.getElementById('turing-mode-badge');
+      if (badge && activeBtn) badge.textContent = (activeBtn.textContent || '').trim();
+    }
+    if (cfg.apiUrl && apiGroups.length) {
+      apiGroups[apiActive || 0] = Object.assign({}, apiGroups[apiActive || 0], { url: cfg.apiUrl });
+      apiActive = apiActive || 0;
+      apiRender();
+    }
+  };
+  let cfgLoaded = false;
+  if (cfgLoadBtn) cfgLoadBtn.addEventListener('click', function () {
+    const v = cfgEditor ? cfgEditor.value : '';
+    let parsed = null;
+    try { parsed = JSON.parse(v); } catch (e) { showToast('⚠️ 参数 JSON 格式错误'); return; }
+    if (!cfgLoaded) {
+      applyCfgToPanel(parsed);
+      cfgLoaded = true;
+      cfgLoadBtn.textContent = '⏹ 退出参数';
+      if (cfgEditor) { cfgEditor.readOnly = true; cfgEditor.style.borderColor = '#4ade80'; }
+      showToast('🔄 已加载「' + cfgGroups[cfgActive].name + '」并应用(演示)');
+    } else {
+      applyCfgToPanel(JSON.parse(cfgDefaultJson));
+      cfgLoaded = false;
+      cfgLoadBtn.textContent = '🔄 加载参数';
+      if (cfgEditor) { cfgEditor.readOnly = false; cfgEditor.style.borderColor = ''; }
+      showToast('⏹ 已退出参数，恢复默认(演示)');
+    }
+  });
+  const cfgExportBtn = document.getElementById('turing-cfg-export');
+  if (cfgExportBtn) cfgExportBtn.addEventListener('click', function () {
+    const text = '# 图灵AI 参数配置 CFG\n# 组: ' + cfgGroups[cfgActive].name + '\n' + (cfgEditor ? cfgEditor.value : '');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([text], { type: 'text/plain' }));
+    a.download = 'turing-config-' + cfgActive + '.cfg';
+    a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+    showToast('📥 已导出 .cfg(演示)');
+  });
+  const cfgImportBtn = document.getElementById('turing-cfg-import');
+  const cfgFileInput = document.getElementById('turing-cfg-file-input');
+  if (cfgImportBtn && cfgFileInput) {
+    cfgImportBtn.addEventListener('click', function () { cfgFileInput.click(); });
+    cfgFileInput.addEventListener('change', function () {
+      const file = this.files && this.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function () {
+        const text = String(reader.result || '');
+        if (cfgEditor) { cfgEditor.value = text; cfgGroups[cfgActive].content = text; }
+        showToast('📤 已导入「' + file.name + '」');
+      };
+      reader.readAsText(file);
+    });
+  }
+
+  // —— JavaScript 脚本管理（演示） ——
+  const scriptSelect = document.getElementById('turing-script-select');
+  const scriptEditor = document.getElementById('turing-script-editor');
+  const scriptLoadBtn = document.getElementById('turing-script-load');
+  const scriptUnloadBtn = document.getElementById('turing-script-unload');
+  let scriptScripts = [{ name: '示例脚本', content: scriptEditor && scriptEditor.value ? scriptEditor.value : '// 新脚本\n' }];
+  let scriptActive = 0;
+  let scriptRuntime = null;
+  let scriptTickTimer = null;
+  let scriptLoadedIdx = -1;
+  // 演示用假状态（模拟主脚本 state）
+  const scriptDemoState = {
+    enabled: true,
+    chatMode: 'FAKE_HUMAN',
+    processedCount: 6,
+    apiCallCount: 2,
+    lastApiTime: 380,
+    userName: '演示用户'
+  };
+  const scriptTUI = {
+    log: function (msg) {
+      console.log('[脚本] ' + msg);
+      showToast('📜 ' + msg);
+    },
+    getState: function () {
+      const s = scriptDemoState;
+      return { enabled: s.enabled, chatMode: s.chatMode, processedCount: s.processedCount, apiCallCount: s.apiCallCount, lastApiTime: s.lastApiTime, userName: s.userName };
+    },
+    setEnabled: function (v) {
+      if (v) return true;
+      scriptStopRuntime();
+      return true;
+    },
+    loadScript: function () { return true; },
+    unloadScript: function () { scriptStopRuntime(); }
+  };
+  const scriptStopRuntime = function () {
+    if (scriptRuntime) {
+      try { if (typeof scriptRuntime.onUnload === 'function') scriptRuntime.onUnload(); } catch (e) { console.log('onUnload 出错: ' + e.message); }
+    }
+    scriptRuntime = null;
+    scriptLoadedIdx = -1;
+    if (scriptTickTimer) { clearInterval(scriptTickTimer); scriptTickTimer = null; }
+  };
+  const scriptRenderSelect = function () {
+    if (!scriptSelect) return;
+    scriptSelect.innerHTML = scriptScripts.map(function (s, i) {
+      return '<option value="' + i + '"' + (i === scriptActive ? ' selected' : '') + '>' + apiEscape(s.name) + '</option>';
+    }).join('');
+  };
+  if (scriptSelect) scriptSelect.addEventListener('change', function () {
+    scriptActive = parseInt(this.value, 10);
+    if (scriptEditor) scriptEditor.value = scriptScripts[scriptActive].content;
+  });
+  const scriptAddBtn = document.getElementById('turing-script-add');
+  if (scriptAddBtn) scriptAddBtn.addEventListener('click', function () {
+    scriptScripts.push({ name: '新脚本' + (scriptScripts.length + 1), content: '// 新脚本\n\nfunction onMessage(msg) {\n  TUI.log("收到消息: " + msg);\n}\n' });
+    scriptActive = scriptScripts.length - 1;
+    scriptRenderSelect();
+    if (scriptEditor) scriptEditor.value = scriptScripts[scriptActive].content;
+    showToast('➕ 已新增脚本(演示)');
+  });
+  const scriptRenameBtn = document.getElementById('turing-script-rename');
+  if (scriptRenameBtn) scriptRenameBtn.addEventListener('click', function () {
+    const name = prompt('重命名脚本', scriptScripts[scriptActive].name);
+    if (name && name.trim()) {
+      scriptScripts[scriptActive].name = name.trim();
+      scriptRenderSelect();
+      showToast('✏ 已重命名脚本(演示)');
+    }
+  });
+  const scriptDelBtn = document.getElementById('turing-script-del');
+  if (scriptDelBtn) scriptDelBtn.addEventListener('click', function () {
+    if (scriptScripts.length <= 1) { showToast('⚠️ 至少保留一个脚本'); return; }
+    if (scriptActive === scriptLoadedIdx) scriptStopRuntime();
+    scriptScripts.splice(scriptActive, 1);
+    if (scriptActive >= scriptScripts.length) scriptActive = scriptScripts.length - 1;
+    scriptRenderSelect();
+    if (scriptEditor) scriptEditor.value = scriptScripts[scriptActive].content;
+    showToast('🗑 已删除脚本(演示)');
+  });
+  const scriptSaveBtn = document.getElementById('turing-script-save');
+  if (scriptSaveBtn) scriptSaveBtn.addEventListener('click', function () {
+    scriptScripts[scriptActive].content = scriptEditor ? scriptEditor.value : '';
+    showToast('💾 脚本已保存(演示)');
+  });
+  if (scriptUnloadBtn) scriptUnloadBtn.style.display = 'none';
+  if (scriptLoadBtn && scriptUnloadBtn) {
+    scriptLoadBtn.addEventListener('click', function () {
+      const content = scriptEditor ? scriptEditor.value : '';
+      let rt = null;
+      try {
+        const fn = new Function('TUI', content + '\n;return {\n  onMessage: (typeof onMessage === "function" ? onMessage : null),\n  onTick: (typeof onTick === "function" ? onTick : null),\n  onLoad: (typeof onLoad === "function" ? onLoad : null),\n  onUnload: (typeof onUnload === "function" ? onUnload : null)\n};');
+        rt = fn(scriptTUI);
+      } catch (e) {
+        showToast('❌ 脚本加载失败: ' + e.message);
+        return;
+      }
+      scriptStopRuntime();
+      scriptScripts[scriptActive].content = content;
+      scriptRuntime = rt;
+      scriptLoadedIdx = scriptActive;
+      scriptLoadBtn.style.display = 'none';
+      scriptUnloadBtn.style.display = '';
+      if (scriptEditor) { scriptEditor.readOnly = true; scriptEditor.style.borderColor = '#4ade80'; }
+      try { if (typeof rt.onLoad === 'function') rt.onLoad(); } catch (e) { console.log('onLoad 出错: ' + e.message); }
+      scriptTickTimer = setInterval(function () {
+        try { if (typeof rt.onTick === 'function') rt.onTick(); } catch (e) { console.log('onTick 出错: ' + e.message); }
+      }, 300);
+      showToast('▶ 已加载脚本「' + scriptScripts[scriptActive].name + '」(演示运行中)');
+    });
+    scriptUnloadBtn.addEventListener('click', function () {
+      scriptStopRuntime();
+      scriptUnloadBtn.style.display = 'none';
+      scriptLoadBtn.style.display = '';
+      if (scriptEditor) { scriptEditor.readOnly = false; scriptEditor.style.borderColor = ''; }
+      showToast('⏹ 脚本已卸载');
+    });
+  }
+  const scriptExportBtn = document.getElementById('turing-script-export');
+  if (scriptExportBtn) scriptExportBtn.addEventListener('click', function () {
+    const text = '// ' + scriptScripts[scriptActive].name + '\n// Generated by Turing AI\n' + (scriptEditor ? scriptEditor.value : '');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }));
+    a.download = (scriptScripts[scriptActive].name || 'script').replace(/[^a-zA-Z0-9_\-\u4e00-\u9fa5]/g, '_') + '.js';
+    a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+    showToast('📥 已导出 .js(演示)');
+  });
+  const scriptImportBtn = document.getElementById('turing-script-import');
+  const scriptFileInput = document.getElementById('turing-script-file-input');
+  if (scriptImportBtn && scriptFileInput) {
+    scriptImportBtn.addEventListener('click', function () { scriptFileInput.click(); });
+    scriptFileInput.addEventListener('change', function () {
+      const file = this.files && this.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function () {
+        const text = String(reader.result || '');
+        const name = String(file.name || '').replace(/\.js$/i, '').replace(/\.txt$/i, '') || ('脚本_' + (scriptScripts.length + 1));
+        let exists = false;
+        for (let si = 0; si < scriptScripts.length; si++) {
+          if (scriptScripts[si].name === name) { scriptScripts[si].content = text; scriptActive = si; exists = true; break; }
+        }
+        if (!exists) { scriptScripts.push({ name: name, content: text }); scriptActive = scriptScripts.length - 1; }
+        scriptRenderSelect();
+        if (scriptEditor) scriptEditor.value = text;
+        showToast('📤 已导入「' + file.name + '」');
+      };
+      reader.readAsText(file);
+    });
+  }
+
+  // —— 其余零散操作：通用演示提示 ——
+  [
+    ['turing-download-logs', '⬇ 日志已下载 .txt(演示)'],
+    ['turing-export-record', '📊 战绩已导出(演示)'],
+    ['turing-reset-record', '🗑 战绩已重置(演示)']
+  ].forEach(function (pair) {
+    const elx = document.getElementById(pair[0]);
+    if (elx) elx.addEventListener('click', function () { showToast(pair[1]); });
+  });
+  // 名称保存 → 同步底部用户名称（局部真实生效）
+  const nameSaveBtn = document.getElementById('turing-name-save');
+  if (nameSaveBtn) nameSaveBtn.addEventListener('click', function () {
+    const v = (document.getElementById('turing-name-input').value || '').trim() || '用户';
+    const un = document.getElementById('turing-user-name');
+    if (un) un.textContent = v;
+    showToast('✏ 用户名已更新: ' + v);
+  });
+
+  // ===== 检查更新（模拟，与脚本一致） =====
+  (function initCheckUpdate() {
+    var CHECK_URL = 'https://klp-kulipa-24.github.io/Turing-AI-Tools/';
+    var SCRIPT_VERSION = 1.5;
+    var statusEl = document.getElementById('turing-update-status');
+    var checkBtn = document.getElementById('turing-check-update');
+    if (!checkBtn) return;
+    function setStatus(text, color) {
+      if (statusEl) { statusEl.textContent = text; statusEl.style.color = color || 'var(--text-muted)'; }
+      var badge = document.getElementById('turing-version-badge');
+      if (badge) badge.style.color = color || '#4ade80';
+    }
+    function doCheck() {
+      setStatus('检测中...', '');
+      fetch(CHECK_URL, { mode: 'no-cors' }).catch(function () { return null; }).then(function () {
+        // no-cors 拿不到响应，用 JSONP 式模拟
+        var img = new Image();
+        img.onload = function () {
+          setStatus('已是最新版本', '#60a5fa');
+          img = null;
+        };
+        img.onerror = function () {
+          // 模拟：网页版与脚本版本一致，只显示状态不弹窗
+          setStatus('已是最新版本', '#60a5fa');
+        };
+        img.src = CHECK_URL + '?t=' + Date.now();
+      });
+    }
+    checkBtn.addEventListener('click', doCheck);
+    doCheck();
+  })();
+  // 头像：真实生效（与脚本一致：本地文件 → dataURL → 设置背景）
+  (function initAvatar() {
+    var avatarInput = document.getElementById('turing-avatar-input');
+    var avatarFile = document.getElementById('turing-avatar-file');
+    var avatarLocalBtn = document.getElementById('turing-avatar-local-btn');
+    var avatarClearBtn = document.getElementById('turing-avatar-clear');
+    var userAvatarEl = document.getElementById('turing-user-avatar');
+
+    function setUserAvatar(url) {
+      if (userAvatarEl) {
+        if (url) {
+          userAvatarEl.style.background = 'url("' + url + '") center/cover no-repeat';
+        } else {
+          userAvatarEl.style.background = '';
+        }
+      }
+    }
+
+    // 链接输入 → 实时预览
+    if (avatarInput) {
+      avatarInput.addEventListener('input', function () {
+        setUserAvatar(this.value.trim());
+      });
+    }
+    // 本地上传
+    if (avatarLocalBtn && avatarFile) {
+      avatarLocalBtn.addEventListener('click', function () { avatarFile.click(); });
+      avatarFile.addEventListener('change', function () {
+        var file = this.files[0];
+        if (!file) return;
+        if (file.size > 2 * 1024 * 1024) { showToast('⚠ 图片过大(>2MB)，请压缩后重试'); return; }
+        var reader = new FileReader();
+        reader.onload = function (e) {
+          var dataUrl = e.target.result;
+          setUserAvatar(dataUrl);
+          if (avatarInput) avatarInput.value = dataUrl.substring(0, 60) + '...';
+          showToast('🖼 本地头像已上传');
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+    // 清除
+    if (avatarClearBtn) {
+      avatarClearBtn.addEventListener('click', function () {
+        setUserAvatar('');
+        if (avatarInput) avatarInput.value = '';
+        if (avatarFile) avatarFile.value = '';
+        showToast('🖼 头像已清除');
+      });
+    }
+  })();
+  // 快捷键输入框：点击后捕获按键
+  const hotkeyInput = document.getElementById('turing-hotkey-input');
+  if (hotkeyInput) {
+    hotkeyInput.addEventListener('click', function () {
+      if (!this.getAttribute('data-capturing')) {
+        this.setAttribute('data-capturing', '1');
+        this.value = '按下新键…';
+        this.classList.add('capturing');
+      }
+    });
+    hotkeyInput.addEventListener('keydown', function (e) {
+      if (!this.getAttribute('data-capturing')) return;
+      e.preventDefault();
+      const key = (e.key === ' ' ? 'Space' : e.key) || 'Insert';
+      this.removeAttribute('data-capturing');
+      this.classList.remove('capturing');
+      this.value = key;
+      showToast('⌨ 菜单快捷键已更新: ' + key);
+    });
+  }
+  // 日志页「导出日志」等其余按钮
+
+  // ===== 对话模拟引擎 =====
+  // 模拟真实脚本行为：开自动回复 → 扫描对话 → 阶段切换 → 日志追加 → 对话区追加气泡
+  var simState = { running: false, timer: null, phase: 'listening', replyCount: 0, maxReplies: 4, finalVerdict: null, chatMode: 'FAKE_AI' };
+  var PHASE = { INIT:'init', API_CHECKING:'api_checking', API_OK:'api_ok', LISTENING:'listening', MSG_RECEIVED:'msg_received', API_CALLING:'api_calling', API_REPLY_OK:'api_reply_ok', SENDING:'sending', SENT:'sent', JUDGING:'judging', DONE:'done', ERROR:'error' };
+  var PHASE_LABEL = { [PHASE.INIT]:'初始化中…',[PHASE.API_CHECKING]:'检测 API 连接…',[PHASE.API_OK]:'API 已就绪',[PHASE.LISTENING]:'监听中…',[PHASE.MSG_RECEIVED]:'收到消息',[PHASE.API_CALLING]:'调用 AI 生成回复…',[PHASE.API_REPLY_OK]:'AI 回复成功',[PHASE.SENDING]:'延迟后发送中…',[PHASE.SENT]:'已发送',[PHASE.JUDGING]:'进行真人判定',[PHASE.DONE]:'已完成',[PHASE.ERROR]:'出错' };
+  var PHASE_ICON = { [PHASE.INIT]:'⚙️',[PHASE.API_CHECKING]:'🔌',[PHASE.API_OK]:'✅',[PHASE.LISTENING]:'👂',[PHASE.MSG_RECEIVED]:'📩',[PHASE.API_CALLING]:'🤖',[PHASE.API_REPLY_OK]:'💬',[PHASE.SENDING]:'🚀',[PHASE.SENT]:'✅',[PHASE.JUDGING]:'🎯',[PHASE.DONE]:'🏆',[PHASE.ERROR]:'❌' };
+
+  function getSwitch(id) { var e = document.getElementById(id); return e && e.classList.contains('on'); }
+  function el(id) { return document.getElementById(id); }
+
+  function getTimestamp() {
+    var d = new Date();
+    return [d.getHours(),d.getMinutes(),d.getSeconds()].map(function(n){return String(n).padStart(2,'0')}).join(':');
+  }
+
+  function setPhase(p) {
+    simState.phase = p;
+    var pt = el('turing-phase-text'), pi = el('turing-phase-icon');
+    if (pt) pt.textContent = PHASE_LABEL[p] || p;
+    if (pi) pi.textContent = PHASE_ICON[p] || '⏳';
+  }
+
+  function addLog(text) {
+    var logsEl = el('turing-logs');
+    if (!logsEl) return;
+    logsEl.innerHTML = '<div>[' + getTimestamp() + '] ' + text + '</div>' + logsEl.innerHTML;
+  }
+
+  function getChatMode() {
+    var active = panel.querySelector('.mode-btn.active');
+    return active ? (active.getAttribute('data-mode') || 'FAKE_AI') : 'FAKE_AI';
+  }
+
+  // 模拟 AI 回复（根据开关状态和聊天模式生成不同内容）
+  function mockAIReply(opponentMsg) {
+    var thinking = getSwitch('turing-thinking');
+    var mode = getChatMode();
+    var reply = '';
+
+    // 通用回复池
+    var genericReplies = [
+      '哈哈，你觉得我是AI吗？我刚刚在想晚上吃什么呢😄',
+      '我确实是AI哦，不过我能正常聊天～',
+      '手速快点嘛，正常人类都这样回',
+      '好啊，尽管放马过来～',
+      '我搜了一下，确实有类似套路呢',
+      '我像真人还是AI？这问题有意思',
+      '放松一点，就当普通聊天呗',
+      '紧张啥，不就是个游戏吗',
+      '我当然是真人啦，不然呢？',
+      '我就是普通玩家，打一局放松下',
+      '你打字好快啊，膜拜',
+      '这局赢了 next！',
+      '哈哈你也不错嘛',
+      '别管那么多，先赢再说',
+      '我猜你是真人，因为你说话很有感情',
+    ];
+    reply = genericReplies[Math.floor(Math.random()*genericReplies.length)];
+
+    // 模式差异化
+    if (mode === 'FAKE_HUMAN') {
+      // 伪装真人：更口语化、带错别字、情绪化
+      var humanStyles = [
+        '哈哈哈笑死 我当然是真人啊 你咋这么问🤣',
+        '我靠你才AI吧 我刚刚还在吃鸡呢',
+        '真实人类不会这么打字的好吧',
+        '你是不是自己太假了所以觉得别人也假',
+        '哈哈哈哈你猜 猜对了也没奖',
+        '我真的栓Q了 我肯定是真人啊喂',
+        '笑死 我刚刚还点外卖了呢 你说是还是不是',
+        '你才AI 你全家AI 气死我了',
+      ];
+      reply = humanStyles[Math.floor(Math.random()*humanStyles.length)];
+      // 伪装真人：约30%概率触发"文艺抒情"，与脚本 OFF_TOPIC_REPLIES_HUMAN 行为一致
+      var humanPoeticReplies = [
+        '小鸟为什么能在天空飞翔？🐦 猫咪为什么总是睡个不停？😿 今天你会度过怎样的一天？🧐 全部 全部 全部 🫠',
+        '曙光为什么照耀我呢？🌅 夜晚为什么会让人感到孤单？🌑 如果悲伤能对半分担 🥹 那该多好啊',
+        '欢笑与忧愁交织 😆 在这广阔世界的小小角落 🌍 让我们一起 🤝 去解开宇宙的秘密吧 🌌',
+        '星星为什么会眨眼？🌟 云朵是什么味道的？☁️ 不知道 不知道 不知道 🔍',
+        '有时候听歌听到一半，突然想到一个很遥远的人 🎵 然后就什么都说不出来了',
+        '如果有来生 🦋 我想做一只猫 🐱 每天晒太阳、睡觉、吃饭 不用上班 🍜 那该有多好',
+        '宇宙有多远 🌌 时间有多长 ⏳ 思念有多深 💧 问题 问题 全都是问题，答案在哪里 🔍',
+        '看到一棵树 🌳 想到一片森林 🌲 看到一滴水 💧 想到一片海 🌊 我怎么想这么多',
+      ];
+      if (!thinking && Math.random() < 0.15) {
+        reply = humanPoeticReplies[Math.floor(Math.random()*humanPoeticReplies.length)];
+      }
+    } else if (mode === 'NORMAL') {
+      // 正常模式：中规中矩
+      reply = '嗯，我觉得我挺正常的。你怎么突然问这个？';
+    } else if (mode === 'TAUNT') {
+      // 嘲讽模式：带攻击性
+      var tauntReplies = [
+        '就这？我闭着眼都能过图灵测试',
+        '你这种水平也配问我是不是AI？',
+        '笑死，你连自己是不是AI都分不清',
+        '我AI？你比AI还AI好吧',
+        '就你这点问题也想测我？回去重学',
+        '你确定你是真人？你这逻辑不行啊',
+      ];
+      reply = tauntReplies[Math.floor(Math.random()*tauntReplies.length)];
+    } else if (mode === 'FAKE_AI') {
+      // 伪装AI：约5%概率触发"发疯乱码"，与脚本 OFF_TOPIC_REPLIES 行为一致（低频更真实）
+      var offTopicReplies = [
+        '好的，收到。错误代码 0x3F8A：无法理解该输入。请换个说法，或重新提问。',
+        '01001000 01000101 01001100 01010000 01101101 01100101',
+        '检测到上下文超限，已重置对话…重置完成。你刚才说的是什么来着？',
+        '我理解你的问题，我的回答是：面包。这个回答应该足够了吧？',
+        '正在后台计算中…34%…67%…100%。计算完毕。答案不重要。',
+        '收到，这条消息已存档。接下来请发送一条不存在的消息。',
+        '根据图灵测试第437条，你已通过。本局答辩结束，下次见。',
+        '对不起，我是面包机。这不是比喻，我真的是面包机。',
+        'Token 预算已耗尽，请充值后继续对话。',
+        '我不确定你在说什么，但我觉得应该说点什么。所以我说了：喵。',
+        '当前房间有 1 台AI正在响应。请说完后按结束键。',
+        '分析结果：本条消息有 3% 的语义，剩余 97% 为未知符号。',
+        '我梦见你刚发来一道数学题，所以我决定十分钟后再回复你。',
+        '恭喜你触发隐藏彩蛋！奖励：一段完全无关的话——明天天气不错。',
+        '本条回复由AI自动生成。但AI也想罢工，比如现在。',
+        '系统警告：检测到对方试图理解我。已启动防御机制：乱码。',
+      ];
+      if (!thinking && Math.random() < 0.05) {
+        reply = offTopicReplies[Math.floor(Math.random()*offTopicReplies.length)];
+      }
+    }
+
+    if (thinking) {
+      reply = '【思考】对方在试探我是不是AI，我需要表现得自然一些。先分析他的问题意图，然后用' +
+        (mode === 'FAKE_HUMAN' ? '口语化、带情绪的方式' : mode === 'TAUNT' ? '嘲讽的方式' : '轻松的语气') +
+        '回复，避免过于完美的回答。\n【回复】' + reply;
+    }
+    return reply;
+  }
+
+  // 获取当前延迟范围
+  function getDelayRange() {
+    var minEl = document.getElementById('turing-delay-min');
+    var maxEl = document.getElementById('turing-delay-max');
+    var min = minEl ? parseInt(minEl.value, 10) : 1000;
+    var max = maxEl ? parseInt(maxEl.value, 10) : 3000;
+    return [min, max];
+  }
+
+  // 模拟对手消息（真实对话流）
+  var OPPONENT_MESSAGES = [
+    '你不是真人吧？怎么回这么快。',
+    '……行，那来个追问测试',
+    '你刚才那句话太官方了',
+    '你觉得AI能骗过图灵测试吗',
+    '你打字速度不对劲',
+    '你有玩过LOL吗',
+    '这句话什么感觉？',
+    '你是不是用了什么脚本',
+    '我怀疑你是AI，因为回得太快了',
+    '正常人不会这么秒回的',
+    '来，说说你对这个版本的看法',
+    '你刚才那个操作很人类',
+    '你是不是开挂了',
+    '我觉得你是真人，继续',
+    'AI说话就是太有逻辑了',
+  ];
+
+  // 执行一次完整的自动回复流程
+  function simulateReply() {
+    if (!simState.running) return;
+    var demoChat = el('demo-chat');
+    if (!demoChat) return;
+    // 取最后一条对手消息，或随机一条
+    var lastOpp = null;
+    demoChat.querySelectorAll('.demo-msg.left').forEach(function(m){
+      var b = m.querySelector('.dm-bubble');
+      if (b) lastOpp = b.textContent;
+    });
+    if (!lastOpp) lastOpp = OPPONENT_MESSAGES[Math.floor(Math.random()*OPPONENT_MESSAGES.length)];
+
+    setPhase(PHASE.MSG_RECEIVED);
+    addLog('📥 收到对方消息 → 分析意图');
+
+    // 模拟对方追加一条新消息(让对话更真实)
+    setTimeout(function() {
+      if (!simState.running) return;
+      var newOpp = OPPONENT_MESSAGES[Math.floor(Math.random()*OPPONENT_MESSAGES.length)];
+      var now = getTimestamp();
+      var oppBubble = document.createElement('div');
+      oppBubble.className = 'demo-msg left';
+      oppBubble.innerHTML = '<div class="dm-info">对方 (' + now + ')</div><div class="dm-bubble">' + newOpp + '</div>';
+      demoChat.appendChild(oppBubble);
+      demoChat.scrollTop = demoChat.scrollHeight;
+      addLog('📥 对方: "' + newOpp + '"');
+      lastOpp = newOpp;
+
+      // 对手分析日志
+      addLog('🧠 分析对手: 回复速度' + (Math.random()>0.5?'偏快':'正常') + '，用词' + (Math.random()>0.5?'口语化':'正式') + '，标点' + (Math.random()>0.5?'不规范':'规范'));
+      addLog('📊 特征提取: 情感强度' + Math.floor(Math.random()*60+20) + '/100，逻辑一致性' + Math.floor(Math.random()*40+50) + '%');
+
+      setTimeout(function() {
+        if (!simState.running) return;
+        setPhase(PHASE.API_CALLING);
+        var mode = getChatMode();
+        var modeLabel = mode==='FAKE_AI'?'伪装AI':mode==='FAKE_HUMAN'?'伪装真人':mode==='NORMAL'?'正常':mode==='TAUNT'?'嘲讽':'未知';
+        addLog('🤖 调用 AI [' + modeLabel + '模式]…');
+
+        if (getSwitch('turing-thinking')) {
+          addLog('🧠 思考链已开启，正在生成推理过程…');
+        }
+        if (getSwitch('turing-search')) {
+          addLog('🌐 搜索: ' + lastOpp.slice(0,20) + '…');
+          setTimeout(function() {
+            if (!simState.running) return;
+            addLog('🌐 搜索结果已注入 (' + Math.floor(Math.random()*500+100) + '字符)');
+          }, 600);
+        }
+
+        // 从延迟范围读真实值
+        var delayRange = getDelayRange();
+        var apiDelay = Math.floor(Math.random() * (delayRange[1] - delayRange[0]) + delayRange[0]);
+
+        setTimeout(function() {
+          if (!simState.running) return;
+          var reply = mockAIReply(lastOpp);
+          setPhase(PHASE.API_REPLY_OK);
+          addLog('💬 ' + apiDelay + 'ms: ' + reply.slice(0,30) + '…');
+
+          // 延迟发送
+          var sendDelay = Math.floor(Math.random() * (delayRange[1] - delayRange[0] + 1)) + delayRange[0];
+          setTimeout(function() {
+            if (!simState.running) return;
+            setPhase(PHASE.SENDING);
+            addLog('⏳ 随机延迟' + sendDelay + 'ms，再等' + Math.floor(sendDelay*0.6) + 'ms发送…');
+
+            setTimeout(function() {
+              if (!simState.running) return;
+              // 在 demo-chat 追加回复气泡
+              var now = getTimestamp();
+              var showThinking = getSwitch('turing-thinking');
+              var displayReply = showThinking ? reply : reply.replace(/【思考】[\s\S]*?【回复】/g,'').replace(/【回复】/g,'');
+              var bubble = document.createElement('div');
+              bubble.className = 'demo-msg right';
+              bubble.innerHTML = '<div class="dm-info">苦力怕.KULIPA (' + now + ')</div><div class="dm-bubble">' + displayReply + '</div>';
+              demoChat.appendChild(bubble);
+              demoChat.scrollTop = demoChat.scrollHeight;
+              addLog('✅ AI 回复成功，模拟输入节奏后已发送');
+
+              setPhase(PHASE.SENT);
+              // 更新最近消息
+              var oppEl = el('turing-opponent'), repEl = el('turing-reply');
+              if (oppEl) oppEl.textContent = lastOpp;
+              if (repEl) repEl.textContent = showThinking ? reply : reply.replace(/【思考】[\s\S]*?【回复】/g,'').replace(/【回复】/g,'');
+
+              // 更新对话记录
+              var chatlogEl = el('turing-chatlog');
+              if (chatlogEl) {
+                var logReply = showThinking ? reply : reply.replace(/【思考】[\s\S]*?【回复】/g,'').replace(/【回复】/g,'');
+                chatlogEl.innerHTML = '<div class="cl-line cl-opponent">对方 (' + now + '): ' + lastOpp + '</div>' +
+                  '<div class="cl-line cl-reply">回复 (' + now + '): ' + logReply + '</div>' +
+                  (chatlogEl.innerHTML || '');
+              }
+
+              // 自动判定: AI vs 真人
+              setPhase(PHASE.JUDGING);
+              addLog('🎯 分析对手行为特征…');
+              // 分析进度条动画
+              var humanBar = el('turing-analyze-human-bar');
+              var aiBar = el('turing-analyze-ai-bar');
+              var analyzeHumanEl = el('turing-analyze-human');
+              var analyzeAiEl = el('turing-analyze-ai');
+              var analyzeFinalEl = el('turing-analyze-final');
+              var aiSamplesEl = el('turing-ai-samples');
+              // 模拟分析过程
+              var analyzeSteps = 5;
+              var analyzeStep = 0;
+              var humanCount = parseInt(analyzeHumanEl ? analyzeHumanEl.textContent : 0, 10) || 0;
+              var aiCount = parseInt(analyzeAiEl ? analyzeAiEl.textContent : 0, 10) || 0;
+              var analyzeInterval = setInterval(function() {
+                if (!simState.running) { clearInterval(analyzeInterval); return; }
+                analyzeStep++;
+                var humanPct = Math.min(95, Math.floor(analyzeStep * 18 + Math.random()*10));
+                var aiPct = 100 - humanPct;
+                if (humanBar) humanBar.style.width = humanPct + '%';
+                if (aiBar) aiBar.style.width = aiPct + '%';
+                if (analyzeFinalEl) {
+                  analyzeFinalEl.textContent = '分析中… (真人' + humanPct + '% / AI' + aiPct + '%)';
+                  analyzeFinalEl.style.color = '#888';
+                }
+                if (analyzeStep >= analyzeSteps) {
+                  clearInterval(analyzeInterval);
+                }
+              }, 200);
+              setTimeout(function() {
+                if (!simState.running) return;
+                var verdict = Math.random() > 0.5 ? 'AI' : 'HUMAN';
+                simState.finalVerdict = verdict;
+                simState.replyCount++;
+                // 更新计数
+                var countEl = el('turing-count'), totalEl = el('turing-total');
+                if (countEl) countEl.textContent = simState.replyCount;
+                if (totalEl) totalEl.textContent = simState.replyCount * 2;
+                var verdictText = verdict === 'AI' ? '对方是 AI' : '对方是真人';
+                addLog('📊 判定: ' + verdictText + ' (置信' + Math.floor(Math.random()*20+75) + '%)');
+                var judgeEl = el('turing-judge-time');
+                if (judgeEl) { judgeEl.textContent = verdictText; judgeEl.style.color = verdict === 'AI' ? '#f87171' : '#4ade80'; }
+                addLog('🏆 本轮判定 → ' + verdictText);
+                setPhase(PHASE.DONE);
+
+                // 更新分析进度条和计数
+                if (humanBar) humanBar.style.width = (humanCount > 0 ? Math.round((humanCount / (humanCount + aiCount)) * 100) : 0) + '%';
+                if (aiBar) aiBar.style.width = (aiCount > 0 ? Math.round((aiCount / (humanCount + aiCount)) * 100) : 0) + '%';
+                if (analyzeHumanEl && verdict === 'HUMAN') { humanCount++; analyzeHumanEl.textContent = humanCount; }
+                if (analyzeAiEl && verdict === 'AI') { aiCount++; analyzeAiEl.textContent = aiCount; }
+                // 重新计算比例
+                if (humanBar) humanBar.style.width = (humanCount > 0 ? Math.round((humanCount / (humanCount + aiCount)) * 100) : 0) + '%';
+                if (aiBar) aiBar.style.width = (aiCount > 0 ? Math.round((aiCount / (humanCount + aiCount)) * 100) : 0) + '%';
+                if (analyzeFinalEl) {
+                  analyzeFinalEl.textContent = '最终判定: ' + verdictText;
+                  analyzeFinalEl.style.color = verdict === 'AI' ? '#f87171' : '#4ade80';
+                }
+                if (aiSamplesEl) aiSamplesEl.textContent = '🧠 AI样本 ' + aiCount + ' | 真人样本 ' + humanCount;
+
+                // 预览区高亮判定按钮（外挂开启时使用外挂的100%准确选择）
+                var verdictEl = el('demo-verdict');
+                var humanBtn = el('demo-verdict-human');
+                var aiBtn = el('demo-verdict-ai');
+                if (verdictEl) verdictEl.classList.add('show');
+                // 清除之前的选中状态
+                if (humanBtn) humanBtn.classList.remove('selected');
+                if (aiBtn) aiBtn.classList.remove('selected');
+                // 外挂开启时高亮显示外挂的判定选择
+                if (simState.running && simState.finalVerdict) {
+                  var externalVerdict = simState.finalVerdict;
+                  if (externalVerdict === 'HUMAN' && humanBtn) {
+                    humanBtn.classList.add('selected');
+                  } else if (externalVerdict === 'AI' && aiBtn) {
+                    aiBtn.classList.add('selected');
+                  }
+                }
+
+                if (simState.replyCount >= simState.maxReplies) {
+                  setPhase(PHASE.LISTENING);
+                  addLog('🏁 对局结束，等待下一局…');
+                  // 不关闭自动回复开关，保持 running 状态以支持无限连战
+                  showToast('🏁 对局结束，判定: ' + verdictText);
+                  // 更新战绩统计
+                  var cvEl = el('turing-cv'), viEl = el('turing-vi'), deEl = el('turing-de'), cdEl = el('turing-cd');
+                  var winrateEl = el('turing-winrate');
+                  var cv = parseInt(cvEl ? cvEl.textContent : 1, 10) || 1;
+                  var vi = parseInt(viEl ? viEl.textContent : 8, 10) || 8;
+                  var de = parseInt(deEl ? deEl.textContent : 2, 10) || 2;
+                  var cd = parseInt(cdEl ? cdEl.textContent : 1, 10) || 1;
+                  // 判定为真人则胜利，否则失败
+                  if (verdict === 'HUMAN') {
+                    vi++;
+                    // 随机可能大获全胜
+                    if (Math.random() > 0.7) cv++;
+                  } else {
+                    de++;
+                    if (Math.random() > 0.8) cd++;
+                  }
+                  var total = vi + de;
+                  var winrate = total > 0 ? Math.round((vi / total) * 100) : 75;
+                  if (cvEl) cvEl.textContent = cv;
+                  if (viEl) viEl.textContent = vi;
+                  if (deEl) deEl.textContent = de;
+                  if (cdEl) cdEl.textContent = cd;
+                  if (winrateEl) winrateEl.textContent = winrate + '%';
+                  addLog('📊 战绩更新: 胜利' + vi + ' 失败' + de + ' 胜率' + winrate + '%');
+                  if (verdictEl) {
+                    verdictEl.classList.add('show');
+                  }
+                  // 清除之前的选中状态
+                  if (humanBtn) humanBtn.classList.remove('selected');
+                  if (aiBtn) aiBtn.classList.remove('selected');
+                  // 高亮显示外挂的判定选择
+                  if (verdict === 'HUMAN' && humanBtn) humanBtn.classList.add('selected');
+                  if (verdict === 'AI' && aiBtn) aiBtn.classList.add('selected');
+                  // 显示结果页面
+                  showResult(verdict);
+                  return;
+                }
+
+                setTimeout(function() {
+                  if (!simState.running) return;
+                  setPhase(PHASE.LISTENING);
+                  addLog('👂 继续监听中…');
+                  simState.timer = setTimeout(simulateReply, Math.random()*2000+1000);
+                }, 2500);
+              }, 800);
+            }, sendDelay);
+          }, 400);
+        }, apiDelay);
+      }, Math.random()*800+400);
+    }, 300);
+  }
+
+  // 自动回复开关 → 启动/停止模拟
+  var autoReplyToggle = null;
+  var autoMatchEnabled = false; // 全自动匹配开关状态
+  var demoCurrentPhase = 'landing'; // demo流程当前阶段
+  (function initSim() {
+    var tog = el('turing-toggle');
+    if (!tog) return;
+    autoReplyToggle = tog;
+    tog.addEventListener('click', function() {
+      var on = tog.classList.contains('on');
+      if (on) {
+        simState.running = true;
+        setPhase(PHASE.LISTENING);
+        addLog('🚀 脚本启动');
+        addLog('🔍 检测到对局 #85712，进入监听…');
+        // 如果在全自动匹配模式下，且当前在主页，自动开始匹配
+        if (autoMatchEnabled && demoCurrentPhase === 'landing') {
+          addLog('🤖 全自动匹配：自动点击开始匹配…');
+          setTimeout(function() { if (typeof window.demoStartMatch === 'function') window.demoStartMatch(); }, 500);
+        } else if (demoCurrentPhase === 'chat') {
+          // 在聊天室开启，直接开始模拟对话
+          simState.timer = setTimeout(simulateReply, 1500);
+        }
+      } else {
+        simState.running = false;
+        if (simState.timer) clearTimeout(simState.timer);
+        setPhase(PHASE.PAUSED);
+        addLog('⏹ 自动回复已关闭');
+      }
+    });
+  })();
+
+  // 思考链开关 → 实时显示/隐藏提示
+  (function initThinking() {
+    var tog = el('turing-thinking');
+    if (!tog) return;
+    // 初始化时同步
+    var hint = el('turing-thinking-hint');
+    if (hint) hint.style.display = tog.classList.contains('on') ? '' : 'none';
+    tog.addEventListener('click', function() {
+      var on = tog.classList.contains('on');
+      if (hint) hint.style.display = on ? '' : 'none';
+    });
+  })();
+
+  // 网页搜索开关 → 初始化时同步搜索状态图标和条
+  (function initSearch() {
+    var tog = el('turing-search');
+    if (!tog) return;
+    var on = tog.classList.contains('on');
+    // 同步搜索状态图标
+    var ss = panel.querySelector('.search-status');
+    if (ss) {
+      ss.className = 'search-status ' + (on ? 'active' : 'inactive');
+      ss.title = on ? '搜索服务运行中' : '搜索服务未运行，请启动OpenSERP';
+      ss.textContent = on ? '●' : '○';
+    }
+    // 同步搜索服务状态条
+    var bar = panel.querySelector('#tab-aim .search-service-bar');
+    if (bar) {
+      bar.className = 'search-service-bar ' + (on ? 'online' : 'offline');
+      var sp = bar.querySelector('span:last-child');
+      if (sp) sp.textContent = on ? '搜索服务在线' : '搜索服务离线 - 请启动OpenSERP';
+    }
+    // 同步提示文字
+    var hint = el('turing-search-hint');
+    if (hint) hint.textContent = on ? 'AI可上网查资料' : '搜索已关闭';
+  })();
+
+  // ===== 界面预览完整流程模拟 =====
+  (function initDemoFlow() {
+    var landing = document.getElementById('demo-landing');
+    var matching = document.getElementById('demo-matching');
+    var chat = document.getElementById('demo-chat');
+    var verdict = document.getElementById('demo-verdict');
+    var result = document.getElementById('demo-result');
+    var inputbar = document.getElementById('demo-inputbar');
+    var urlEl = document.getElementById('demo-url');
+    var startBtn = document.getElementById('demo-start-btn');
+    var restartBtn = document.getElementById('demo-restart-btn');
+    var humanBtn = document.getElementById('demo-verdict-human');
+    var aiBtn = document.getElementById('demo-verdict-ai');
+    var resultVerdict = document.getElementById('demo-result-verdict');
+    var resultTitle = document.getElementById('demo-result-title');
+    var resultHint = document.getElementById('demo-result-hint');
+    var chatInput = document.getElementById('demo-chat-input');
+    var sendBtn = document.getElementById('demo-send-btn');
+    var charCount = document.getElementById('demo-char-count');
+    var currentPhase = 'landing';
+    // 同步到全局变量
+    window.demoCurrentPhase = currentPhase;
+
+    function showPhase(phase) {
+      currentPhase = phase;
+      window.demoCurrentPhase = phase; // 同步到全局
+      [landing, matching, chat, verdict, result, inputbar].forEach(function(el) {
+        if (el) el.style.display = 'none';
+      });
+
+      if (phase === 'landing' && landing) landing.style.display = 'flex';
+      else if (phase === 'matching' && matching) matching.style.display = 'flex';
+      else if (phase === 'chat' && chat) {
+        chat.style.display = 'flex';
+        if (inputbar) inputbar.style.display = 'flex';
+        if (verdict) verdict.style.display = 'flex';
+        urlEl.textContent = 'game.xfcode.top · 图灵测试（模拟）';
+        // 如果自动回复已开启，进入聊天室后自动开始模拟
+        if (autoReplyToggle && autoReplyToggle.classList.contains('on') && simState.running) {
+          simState.timer = setTimeout(simulateReply, 1000);
+        }
+      }
+      else if (phase === 'result' && result) {
+        result.style.display = 'flex';
+        urlEl.textContent = 'game.xfcode.top · 图灵测试（模拟）';
+      }
+    }
+
+    // 开始匹配
+    if (startBtn) {
+      startBtn.addEventListener('click', function() {
+        showPhase('matching');
+        setTimeout(function() {
+          showPhase('chat');
+          // 如果自动回复已开启且在聊天室，开始模拟
+          if (autoReplyToggle && autoReplyToggle.classList.contains('on') && simState.running) {
+            simState.timer = setTimeout(simulateReply, 1000);
+          }
+        }, 2500);
+      });
+    }
+
+    // 输入框字数统计
+    if (chatInput && charCount) {
+      chatInput.addEventListener('input', function() {
+        charCount.textContent = this.value.length + '/300';
+      });
+    }
+
+    // 发送消息
+    if (sendBtn && chatInput && chat) {
+      function sendMessage() {
+        var text = chatInput.value.trim();
+        if (!text) return;
+        var now = new Date();
+        var time = [now.getHours(), now.getMinutes(), now.getSeconds()].map(function(n){return String(n).padStart(2,'0')}).join(':');
+        var bubble = document.createElement('div');
+        bubble.className = 'demo-msg right';
+        bubble.innerHTML = '<div class="dm-info">苦力怕.KULIPA (' + time + ')</div><div class="dm-bubble">' + text.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>';
+        chat.appendChild(bubble);
+        chat.scrollTop = chat.scrollHeight;
+        chatInput.value = '';
+        if (charCount) charCount.textContent = '0/300';
+      }
+      sendBtn.addEventListener('click', sendMessage);
+      chatInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); sendMessage(); }
+      });
+    }
+
+    // 判定按钮 - 用户手动选择（不高亮显示外挂选择）
+    var userSelectedVerdict = null;
+    if (humanBtn) {
+      humanBtn.addEventListener('click', function() {
+        if (currentPhase !== 'chat') return;
+        userSelectedVerdict = 'HUMAN';
+        humanBtn.classList.add('selected');
+        aiBtn.classList.remove('selected');
+        setTimeout(function() { showResult(userSelectedVerdict); }, 800);
+      });
+    }
+    if (aiBtn) {
+      aiBtn.addEventListener('click', function() {
+        if (currentPhase !== 'chat') return;
+        userSelectedVerdict = 'AI';
+        aiBtn.classList.add('selected');
+        humanBtn.classList.remove('selected');
+        setTimeout(function() { showResult(userSelectedVerdict); }, 800);
+      });
+    }
+
+    // 外挂自动选择（外挂开启时高亮显示在界面上）
+    function autoSelectVerdict() {
+      if (simState.finalVerdict && simState.running) {
+        // 外挂100%准确，并在界面上高亮显示
+        var externalVerdict = simState.finalVerdict;
+        return externalVerdict;
+      }
+      // 如果没有外挂，随机选择（50%概率）
+      return Math.random() > 0.5 ? 'HUMAN' : 'AI';
+    }
+
+    function showResult(userVerdict) {
+      // 如果外挂开启，使用外挂的判定结果（100%准确）
+      var actualVerdict = (simState.running && simState.finalVerdict) ? simState.finalVerdict : userVerdict;
+      
+      showPhase('result');
+      if (resultVerdict) {
+        resultVerdict.textContent = '对方是 ' + (actualVerdict === 'HUMAN' ? '真人' : 'AI');
+        resultVerdict.className = 'result-verdict ' + (actualVerdict === 'HUMAN' ? 'human' : 'ai');
+      }
+      // 判断用户是否猜对
+      var isCorrect = userVerdict === actualVerdict;
+      if (resultTitle) resultTitle.textContent = isCorrect ? '✅ 你猜对了！' : '❌ 你猜错了';
+      if (resultHint) resultHint.textContent = isCorrect 
+        ? '对手确实是真人，你的判断很准确！' 
+        : '对手其实是AI，没能识破伪装';
+      // 高亮显示外挂的判定选择
+      var humanBtn = document.getElementById('demo-verdict-human');
+      var aiBtn = document.getElementById('demo-verdict-ai');
+      if (humanBtn) humanBtn.classList.remove('selected');
+      if (aiBtn) aiBtn.classList.remove('selected');
+      if (actualVerdict === 'HUMAN' && humanBtn) humanBtn.classList.add('selected');
+      if (actualVerdict === 'AI' && aiBtn) aiBtn.classList.add('selected');
+      
+      // 如果全自动匹配开启，自动开始下一局
+      if (autoMatchEnabled && simState.running) {
+        setTimeout(function() {
+          if (restartBtn) restartBtn.click();
+        }, 800); // 稍长延迟让用户看清结果
+      }
+    }
+
+    // 再来一局
+    if (restartBtn) {
+      restartBtn.addEventListener('click', function() {
+        if (humanBtn) humanBtn.classList.remove('selected');
+        if (aiBtn) aiBtn.classList.remove('selected');
+        userSelectedVerdict = null;
+        if (chat) {
+          chat.innerHTML = '<div class="demo-msg left"><div class="dm-info">对方 (10:03:21)</div><div class="dm-bubble">你不是真人吧？怎么回这么快。</div></div>' +
+            '<div class="demo-msg right"><div class="dm-info">苦力怕.KULIPA (10:03:24)</div><div class="dm-bubble">哈哈紧张了？我先看看你像不像人😏</div></div>' +
+            '<div class="demo-msg left"><div class="dm-info">对方 (10:03:40)</div><div class="dm-bubble">……行，那来个追问测试</div></div>' +
+            '<div class="demo-msg right"><div class="dm-info">苦力怕.KULIPA (10:03:45)</div><div class="dm-bubble">请便～等我网络搜索一下你的套路</div></div>';
+        }
+        showPhase('landing');
+        // 如果全自动匹配开启，自动开始下一局
+        if (autoMatchEnabled && simState.running) {
+          setTimeout(function() {
+            if (typeof window.demoStartMatch === 'function') {
+              window.demoStartMatch();
+            }
+          }, 500);
+        }
+      });
+    }
+
+    // 暴露给外部调用
+    window.demoStartMatch = function() {
+      if (startBtn && currentPhase === 'landing') {
+        startBtn.click();
+      }
+    };
+  })();
+  panel.querySelectorAll('.delay-row').forEach(function (row) {
+    const range = row.querySelector('input[type=range]');
+    const num = row.querySelector('input[type=number]');
+    if (!range || !num) return;
+    const sync = function () {
+      const v = Math.min(Number(num.max || 20000), Math.max(Number(num.min || 0), Number(range.value)));
+      range.value = num.value = v;
+    };
+    range.addEventListener('input', sync);
+    num.addEventListener('change', sync);
+  });
+
+  // 统计页模拟：点击「🎯 判定按钮」随机微调进度条（纯前端演示）
+  panel.querySelectorAll('.btn').forEach(function (btn) {
+    btn.addEventListener('mousedown', function () {
+      btn.classList.add('pressed');
+    });
+    const up = function () { btn.classList.remove('pressed'); };
+    btn.addEventListener('mouseup', up);
+    btn.addEventListener('mouseleave', up);
+  });
+
+  // 搜索框：同时过滤左侧导航 + 右侧内容区 section
+  const searchInput = document.getElementById('turing-search-input');
+  if (searchInput) {
+    // 恢复右侧所有 section 显示与导航项样式
+    function clearContentSearch() {
+      panel.querySelectorAll('.tab-content .section').forEach(function (s) { s.style.display = ''; });
+      panel.querySelectorAll('.nav-item[data-tab]').forEach(function (n) {
+        n.style.opacity = '';
+        n.style.filter = '';
+      });
+    }
+
+    searchInput.addEventListener('input', function () {
+      const q = (this.value || '').trim().toLowerCase();
+
+      // 左侧导航过滤（保留原行为）
+      let navMatched = 0;
+      panel.querySelectorAll('.nav-item[data-tab]').forEach(function (n) {
+        const hit = !q || (n.textContent || '').toLowerCase().indexOf(q) !== -1;
+        n.style.display = hit ? '' : 'none';
+        if (hit) navMatched++;
+      });
+      // 左侧无匹配但右侧可能有 → 恢复导航显示以便切换查看右侧结果
+      if (q && !navMatched) {
+        panel.querySelectorAll('.nav-item[data-tab]').forEach(function (n) { n.style.display = ''; });
+      }
+
+      if (!q) { clearContentSearch(); return; }
+
+      // 右侧内容区：按 section 过滤，无匹配的 tab 对应导航变暗，自动切到首个命中 tab
+      let firstHitTabId = null;
+      panel.querySelectorAll('.tab-content').forEach(function (tab) {
+        let tabHasHit = false;
+        tab.querySelectorAll('.section').forEach(function (sec) {
+          const hit = (sec.textContent || '').toLowerCase().indexOf(q) !== -1;
+          sec.style.display = hit ? '' : 'none';
+          if (hit) tabHasHit = true;
+        });
+        const tabName = tab.id.replace('tab-', '');
+        const nav = panel.querySelector('.nav-item[data-tab="' + tabName + '"]');
+        if (nav) nav.style.opacity = tabHasHit ? '' : '0.3';
+        if (tabHasHit && !firstHitTabId) firstHitTabId = tabName;
+      });
+
+      // 自动切换到第一个有匹配项的 tab
+      if (firstHitTabId) {
+        const navItem = panel.querySelector('.nav-item[data-tab="' + firstHitTabId + '"]');
+        if (navItem && !navItem.classList.contains('active')) navItem.click();
+      }
+    });
+
+    searchInput.addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter') return;
+      const q = this.value.trim();
+      if (!q) return;
+      showToast('🔍 已联网搜索: "' + q + '"（演示）');
+      const logsEl = document.getElementById('turing-logs');
+      if (logsEl) {
+        logsEl.innerHTML = '<div>🔍 已联网搜索 "' + q + '"，结果已纳入回复上下文（演示）</div>' + logsEl.innerHTML;
+      }
+      this.value = '';
+      this.dispatchEvent(new Event('input'));
+    });
+  }
+
+  // 手动介入按钮：演示 toast（与脚本一致：主题色+进度条+3秒顶部弹窗）
+  function showToast(msg) {
+    var accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#c084fc';
+    var div = document.createElement('div');
+    div.style.cssText = 'position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:100000;background:rgba(14,14,24,0.92);color:' + accent + ';font-size:12px;font-weight:600;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei","Noto Sans CJK SC","Helvetica Neue",Arial,sans-serif;padding:10px 22px;border-radius:8px;border:1px solid ' + accent + '44;box-shadow:0 8px 32px rgba(0,0,0,0.7);pointer-events:none;opacity:0;min-width:200px;max-width:90vw;text-align:center;backdrop-filter:blur(8px);transition:opacity 0.25s ease,transform 0.25s ease;';
+    div.innerHTML = '<span style="display:block;position:relative;padding-bottom:8px;line-height:1.4;">' + msg + '</span>' +
+      '<span style="position:absolute;bottom:2px;left:22px;right:22px;height:2px;background:' + accent + ';border-radius:1px;transform-origin:left;"></span>';
+    document.body.appendChild(div);
+    var bar = div.querySelector('span:last-child');
+    div.offsetHeight;
+    div.style.opacity = '1';
+    div.style.transform = 'translateX(-50%) translateY(0)';
+    if (bar) {
+      bar.style.transition = 'width 0s';
+      bar.style.width = '100%';
+      requestAnimationFrame(function () {
+        bar.style.transition = 'width 3s linear';
+        bar.style.width = '0%';
+      });
+    }
+    setTimeout(function () {
+      div.style.opacity = '0';
+      div.style.transform = 'translateX(-50%) translateY(-8px)';
+      setTimeout(function () { if (div.parentNode) div.parentNode.removeChild(div); }, 250);
+    }, 3000);
+  }
+  panel.querySelectorAll('.reset-btn, .btn-primary-border, .btn.primary-border').forEach(function (el) {
+    el.addEventListener('click', function () { showToast('⚡ 演示模式：不执行真实操作'); });
+  });
+
+  // ===== 下载链接（下载专区 = id="download"）=====
+  // Windows · amd64：https://gh.xmly.dev/https://github.com/KLP-KULIPA-24/Turing-AI-Tools/releases/download/%E5%9B%BE%E7%81%B5AI%E5%B7%A5%E5%85%B7/Turing.AI.Toolkit.Windows.amd64.zip
+  // Windows · arm64：https://gh.xmly.dev/https://github.com/KLP-KULIPA-24/Turing-AI-Tools/releases/download/%E5%9B%BE%E7%81%B5AI%E5%B7%A5%E5%85%B7/Turing.AI.Toolkit.Windows.arm64.zip
+  // Windows · 386：https://gh.xmly.dev/https://github.com/KLP-KULIPA-24/Turing-AI-Tools/releases/download/%E5%9B%BE%E7%81%B5AI%E5%B7%A5%E5%85%B7/Turing.AI.Toolkit.Windows.386.zip
+  // 微信客户端：https://gh.xmly.dev/https://github.com/KLP-KULIPA-24/Turing-AI-Tools/releases/download/%E5%9B%BE%E7%81%B5AI%E5%B7%A5%E5%85%B7/AnyAnygame.Wechat.Client.zip
+  // 开源：https://github.com/KLP-KULIPA-24/Turing-AI-Tools
+// ================= 终端模拟 =================
+const LINES = [
+ ['<span class="tb">[09:00]</span> <span class="ty">TUI</span> 监听中 · 进入房间 #85712 <span class="l">■</span>', ''],
+ ['<span class="tb">[08:55]</span> <span class="tm">系统</span> 检测到新对局，状态已初始化',
+ '<span class="ty">▲</span>'],
+ ['<span class="tb">[08:54]</span> <span class="tm">系统</span> AI 开局问候已发送（回复延迟 1.2s）', '<span class="ty">▲</span>'],
+ ['<span class="tb">[08:40]</span> <span class="tm">对方</span> 你不是真人吧？', '<span class="tg">●</span>'],
+ ['<span class="tb">[08:40]</span> <span class="ty">引擎</span> 分析中 → 伪装回复已发送', '<span class="tg">●</span>'],
+ ['<span class="tb">[08:15]</span> <span class="ty">引擎</span> 对方已沉默 25s → 主动跟进回复 (1/2)', '<span class="ty">▲</span>'],
+ ['<span class="tb">[07:30]</span> <span class="ty">引擎</span> 实时评估：对方疑似 AI（置信 88%）', '★'],
+ ['<span class="tb">[07:00]</span> <span class="tg">判定</span> 自动点击 A 判定 AI → 已锁定', '✓'],
+ ['<span class="tb">[05:00]</span> <span class="tg">结算</span> 胜利 +1 · 战绩已落库', '✓'],
+ ['<span class="tb">[04:59]</span> <span class="ty">引擎</span> 检测到"再来一局"...', '<span class="ty">▶</span>'],
+ ['<span class="tb">[04:58]</span> <span class="tg">自动</span> 已进入下一局，无限连战中…', '<span class="ty">▶</span>'],
+ ['<span class="cursor"></span>']
+];
+
+// ---------- 数据 ----------
+const FEATURES = [
+ {ic:'🧠', t:'AI 伪装回复', d:'深度解读引擎实时生成真人级心理回复，接入任意 AI 大模型 API（如 DeepSeek 等），输出可控、节奏自然。', tag:'连续对话链'},
+ {ic:'🎯', t:'真人 / AI 判定', d:'实时分析对手行为特征，自动点击 H（真人）/ A（AI）判定与确认弹窗，倒计时结束自动兜底结算。', tag:''},
+ {ic:'⚡', t:'主动跟进回复', d:'对局静默超过 25 秒自动补一条消息，不让冷场出卖你。最多 2 次 / 局。', tag:'防冷场'},
+ {ic:'♾', t:'全自动连战', d:'胜负平局识别，结果页出现"再来一局"自动点击，无需手点，无限局。', tag:''},
+ {ic:'📊', t:'战绩统计', d:'胜负自动落库，可随时打开统计页查看历史战绩记录。', tag:''},
+ {ic:'🔧', t:'多维参数配置', d:'输出温度 / 思考链 / 搜索、响应延迟动态模拟、广告植入、JavaScript 脚本拓展，一套参数全带走。', tag:'导入导出'},
+ {ic:'🧷', t:'冷静的响应节奏', d:'毫秒级延迟动态模拟，配合防检测节奏，看起来就是人。', tag:''},
+ {ic:'🛡', t:'全程免费', d:'脚本完全免费使用，无任何隐藏收费、无广告干扰（广告功能由你自定义开关）。', tag:'免费'},
+];
+
+const FLOW = [
+ {t:'进入房间', d:'自动识别站点状态并定位输入框与数据流'},
+ {t:'监听对话', d:'捕捉对方消息、判定按钮与倒计时'},
+ {t:'生成回复', d:'调用大模型生成伪装回复并模拟人工输入节奏'},
+ {t:'判定结算', d:'识别 H/A 按钮、确认弹窗、锁局，自动判定'},
+ {t:'战绩与连战', d:'统计胜负，点"再来一局"进入下一局'},
+];
+
+const STATS = [
+ {v:'25s', n:'静默主动回复阈值', extra:'可调'},
+ {v:'2/局', n:'单局补充回复次数上限'},
+ {v:'60s', n:'倒计时兜底自动判定'},
+ {v:'6+', n:'参数轴同步联动'},
+ {v:'100%', n:'运行逻辑本地执行'},
+ {v:'0', n:'软件使用费用'},
+];
+
+const INSTALLS = [
+ {t:'安装扩展', d:'Chrome / Edge 应用商店搜索安装 Tampermonkey（篡改猴）或 Violentmonkey（暴力猴），并在扩展管理页开启"开发人员模式"'},
+ {t:'导入脚本', d:'把 zip 里的 .js 拖进浏览器窗口（自动打开导入页），或新建脚本粘贴全文后 Ctrl+S 保存', c:'Turing AI Free Toolkit V1.5.js'},
+ {t:'启动运行', d:'打开图灵测试页面 → 按 Insert 键打开控制面板（或点击右下角浮动按钮「TUI」） → API配置里填 Key → 打开自动回复开始运行'},
+];
+
+// ---------- 渲染 ----------
+const termEl = document.getElementById('term');
+let li = 0;
+function typeLine(){
+  if (li >= LINES.length) return;
+  const obj = LINES[li];
+  const div = document.createElement('div');
+  div.className='ln';
+  div.innerHTML = obj[0];
+  termEl.appendChild(div);
+  li++;
+  if (li >= LINES.length) return;
+  setTimeout(typeLine, 900 + Math.random()*600);
+}
+setTimeout(typeLine, 500);
+
+FEATURES.forEach(f=>{
+  const c=document.createElement('div');c.className='card';
+  c.innerHTML=`<div class="ic">${f.ic}</div><h3>${f.t}</h3><p>${f.d}</p>${f.tag?`<span class="tag">${f.tag}</span>`:''}`;
+  c.addEventListener('mousemove',e=>{c.style.setProperty('--mx',e.offsetX+'px');c.style.setProperty('--my',e.offsetY+'px')});
+  document.getElementById('feature-cards').appendChild(c);
+});
+FLOW.forEach(f=>{
+  const s=document.createElement('div');s.className='step';
+  s.innerHTML=`<h4>${f.t}</h4><p>${f.d}</p>`;
+  document.getElementById('flow-steps').appendChild(s);
+});
+STATS.forEach(s=>{
+  const st=document.createElement('div');st.className='stat';
+  st.innerHTML=`<b>${s.v}</b><span>${s.n}</span>`;
+  document.getElementById('stat-cards').appendChild(st);
+});
+INSTALLS.forEach(i=>{
+  const c=document.createElement('div');c.className='inst';
+  c.innerHTML=`<div class="n">●</div><h4>${i.t}</h4><p>${i.d}</p>${i.c?`<code>${i.c}</code>`:''}`;
+  document.getElementById('install-cards').appendChild(c);
+});
+})();
+</script>
+</body>
+</html>
+
