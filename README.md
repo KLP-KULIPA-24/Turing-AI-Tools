@@ -10,7 +10,7 @@
 
 「图灵AI辅助」是一款注入浏览器的 AI 辅助研究引擎 —— 自动监听网页图灵测试的全流程，调用大模型 API 生成真人级回复并自动发送，实时分析对手是真人还是 AI，智能判定一键结算，并自动开启下一局。同时提供「任意门 · 自建网页客户端」配套发行：网页版被关闭也能在浏览器以微信身份完整游玩。
 
-- 官网：https://klp-kulipa.github.io/turing-ai-toolkit/
+- 官网：https://klp-kulipa-24.github.io/Turing-AI-Tools/
 - 当前版本：**V1.5**（免费、无内置广告）
 - 检查更新：油猴脚本启动时会读取本站徽章上的版本号 `V1.5` 自动比对
 - 客户端版本：**微信客户端 V1.0**
@@ -212,7 +212,7 @@ http://127.0.0.1:8890/*
 
 仓库根目录同时保管主脚本、各平台发行目录与官网源码。发行策略：
 
-- **V1.5（本次发行）**：发行 **Windows 压缩包** 与 **微信客户端压缩包**，发布在 GitHub Releases（仓库 `KLP-KULIPA/turing-ai-toolkit`），上传的资产为 `Turing.AI.Toolkit.Windows.amd64.zip` / `Turing.AI.Toolkit.Windows.arm64.zip` / `Turing.AI.Toolkit.Windows.386.zip` / `AnyAnygame.Wechat.Client.zip`；
+- **V1.5（本次发行）**：发行 **Windows 压缩包** 与 **微信客户端压缩包**，发布在 GitHub Releases（仓库 `KLP-KULIPA-24/Turing-AI-Tools`），上传的资产为 `Turing.AI.Toolkit.Windows.amd64.zip` / `Turing.AI.Toolkit.Windows.arm64.zip` / `Turing.AI.Toolkit.Windows.386.zip` / `AnyAnygame.Wechat.Client.zip`；
 - **V2.0（后续发行）**：未压缩的平台目录（macOS / Linux / 移动端等）届时统一打包发行。
 
 ### V1.5 发行压缩包（GitHub Releases 资产）
@@ -312,7 +312,7 @@ uname -m
 
 本目录同时是「图灵AI辅助」的官方网站源码，部署到 GitHub Pages 后即：
 
-- 官网：https://klp-kulipa.github.io/turing-ai-toolkit/
+- 官网：https://klp-kulipa-24.github.io/Turing-AI-Tools/
 - 油猴脚本的「检查更新」数据源（脚本读取页面徽章版本号 `V1.5` 进行比对）
 
 ### 目录结构
@@ -325,23 +325,25 @@ uname -m
 | `SECURITY.md` | 安全与合规说明 |
 | `苦力怕.KULIPA头像【圆形】.png` | 站点 / GitHub 头像（KULIPA · 苦力怕，圆形） |
 
-> 网页的「下载」按钮指向 GitHub Releases（`KLP-KULIPA/turing-ai-toolkit`）的 `V1.5` tag，无需在站点目录里放压缩包；发布流程见「打包更新流程」。
+> 网页的「下载」按钮指向 GitHub Releases（`KLP-KULIPA-24/Turing-AI-Tools`）的 `V1.5` tag，无需在站点目录里放压缩包；发布流程见「打包更新流程」。
 
 ### 部署方式
 
-将本目录内容推送到 `KLP-KULIPA` 的 GitHub Pages 仓库（仓库名 `KLP-KULIPA.github.io`），站点部署到 `/turing-ai-toolkit/` 子路径：
+将本目录内容直接推送到项目仓库 `KLP-KULIPA-24/Turing-AI-Tools` 的根目录，由仓库自身的 GitHub Pages 提供站点：
 
-1. GitHub → 新建仓库（建议仓库名 `KLP-KULIPA.github.io`，私有公开均可）；
-2. 将本目录的 `index.html`、`README.md`、头像文件放入仓库的 `turing-ai-toolkit/` 子目录并推送；
-3. 仓库 Settings → Pages → Source 选择 `main` 分支 / 根目录（部署后站点位于 https://klp-kulipa.github.io/turing-ai-toolkit/）；
-4. 等待几分钟后访问 https://klp-kulipa.github.io/turing-ai-toolkit/ 即可。
+1. GitHub → 打开仓库 `KLP-KULIPA-24/Turing-AI-Tools`；
+2. 将本目录的 `index.html`、`README.md`、头像文件放到仓库根目录并推送；
+3. 仓库 Settings → Pages → Source 选择 `main` 分支 / 根目录（部署后站点位于 https://klp-kulipa-24.github.io/Turing-AI-Tools/）；
+4. 等待几分钟后访问 https://klp-kulipa-24.github.io/Turing-AI-Tools/ 即可。
+
+> 注意：Pages 路径区分大小写，必须是 `Turing-AI-Tools`，不能写成 `turing-ai-tools`。
 
 ### 版本检查机制（重要）
 
 油猴脚本 [Turing AI Free Toolkit V1.5.js](../Turing%20AI%20Free%20Toolkit%20V1.5.js) 启动后会自动请求本站：
 
 ```
-GET https://klp-kulipa.github.io/turing-ai-toolkit/
+GET https://klp-kulipa-24.github.io/Turing-AI-Tools/
 ```
 
 然后从 HTML 中匹配版本徽章：
